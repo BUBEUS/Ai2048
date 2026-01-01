@@ -3,6 +3,7 @@ from ai_player import AIPlayer
 import numpy as np
 import math
 import random
+import time
 
 # Parametry
 ALPHA_START = 0.001
@@ -20,6 +21,8 @@ def train():
     scores_history = []
     max_tiles_history = []
 
+    start_time = time.time()
+
     print("Start treningu (Normalized Features)...")
 
     for episode in range(EPISODES):
@@ -32,6 +35,8 @@ def train():
         ai.alpha = ALPHA_START - (ALPHA_START - ALPHA_END) * progress
         epsilon = max(0.01, 0.2 - progress * 0.2) # Zmniejszona losowość na start
 
+        sim_game = Game2048(game.size) # 1.1 tu wyciagniecie
+
         while not done:
             valid_moves = game.get_valid_moves()
             if not valid_moves:
@@ -42,7 +47,7 @@ def train():
                 best_move = random.choice(valid_moves)
             else:
                 best_move, best_v = None, -float('inf')
-                sim_game = Game2048(game.size)
+                #sim_game = Game2048(game.size) 1.1 wyciagniecie przed petle dla optymalizacji
 
                 for move in valid_moves:
                     sim_game.board = state.copy()
@@ -86,7 +91,11 @@ def train():
             avg_score = sum(scores_history) / len(scores_history)
             avg_max = sum(max_tiles_history) / len(max_tiles_history)
 
-            print(f"Ep: {episode} | Avg Score: {avg_score:.0f} | Avg MaxTile: {avg_max:.0f} | Alpha: {ai.alpha:.5f}")
+            end_time = time.time()
+            duration = end_time - start_time
+            start_time = time.time()
+
+            print(f"Ep: {episode} | Avg Score: {avg_score:.0f} | Avg MaxTile: {avg_max:.0f} | Time (50 ep): {duration:.2f}s")
             print(f"Wagi: Empty={ai.weights[0]:.2f}, Max={ai.weights[1]:.2f}, Snake={ai.weights[2]:.2f}, Merge={ai.weights[3]:.2f}")
             print("Ostatnia plansza:")
             print(game.board)

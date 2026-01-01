@@ -1,4 +1,15 @@
 import numpy as np
+import math
+
+# --- OPTYMALIZACJA 1: Globalna tablica logarytmów (Lookup Table) ---
+# Tworzymy tablicę, gdzie indeks to wartość kafelka (0..65536), a wartość to log2.
+# Dzięki temu unikamy wolnego np.log2() i iterowania.
+MAX_VAL = 65536
+LOG_LOOKUP = np.zeros(MAX_VAL + 1, dtype=np.float32)
+for i in range(1, 17): # 2^1 do 2^16
+    val = 2**i
+    if val <= MAX_VAL:
+        LOG_LOOKUP[val] = i
 
 class AIPlayer:
     def __init__(self):
@@ -6,6 +17,11 @@ class AIPlayer:
         # Kolejność: [Empty, MaxTile, Snake, Merge]
         self.weights = np.array([0.5, 0.5, 0.5, 0.5])
         self.alpha = 0.00025  # Znacznie mniejsza alpha dla stabilności
+
+
+        # Cache do zapamiętywania ocen planszy
+        # Klucz: bajty planszy, Wartość: wynik oceny
+        self.evaluation_cache = {}
 
         # Macierz Gradientu (Snake)
         base_gradient = np.array([
@@ -41,6 +57,25 @@ class AIPlayer:
         gradient_scores = [np.sum(board_log * g) for g in self.gradients]
         best_gradient = max(gradient_scores) / 1000.0
 
+
+
+        #1.1 change wektoryzacja
+        # --- ZMIANA TUTAJ: Cecha 4: Merges (Wektoryzacja) ---
+        # Zamiast wolnych pętli for, używamy szybkiego porównywania macierzy numpy.
+        # Porównujemy planszę z jej wersją przesuniętą o 1 w prawo/dół.
+
+        # Czy element [i] == element [i+1] (poziomo) i nie są zerami?
+        merges_h = (board[:, :-1] == board[:, 1:]) & (board[:, :-1] != 0)
+
+        # Czy element [i] == element [i+1] (pionowo) i nie są zerami?
+        merges_v = (board[:-1, :] == board[1:, :]) & (board[:-1, :] != 0)
+
+        merges = np.sum(merges_h) + np.sum(merges_v)
+        merges_norm = merges / 48.0
+
+        # Zwracamy znormalizowany wektor
+        return np.array([empty, max_val, best_gradient, merges_norm])
+        '''
         # Cecha 4: Merges (0-48) -> Skalujemy do 0-1
         merges = 0
         for r in range(4):
@@ -53,6 +88,7 @@ class AIPlayer:
 
         # Zwracamy znormalizowany wektor
         return np.array([empty, max_val, best_gradient, merges_norm])
+'''
 
     def evaluate(self, board):
         return np.dot(self.weights, self.get_features(board))
