@@ -7,9 +7,9 @@ import os
 class AIPlayer:
     def __init__(self):
         # --- ZMIANA: Dwa zestawy wag ---
-        # [Empty, MaxTile, Snake, Merge]
-        self.weights_normal = np.array([0.5, 0.5, 0.5, 0.5]) # Gdy > 4 puste
-        self.weights_panic  = np.array([0.5, 0.5, 0.5, 0.5]) # Gdy <= 4 puste
+        # 0: Empty, 1: MaxTile, 2: Gradient, 3: Merge, 4: CORNER, 5: NEIGHBOR
+        self.weights_normal = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
+        self.weights_panic  = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
 
         self.alpha = 0.00025
 
@@ -33,54 +33,45 @@ class AIPlayer:
         mask = board > 0
         board_log[mask] = np.log2(board[mask])
 
-        # --- NORMALIZACJA CECH (Klucz do naprawy eksplozji) ---
-
-        # Cecha 1: Puste Pola (0-16) -> Skalujemy do 0-1
+        # --- NORMALIZACJA CECH ---
+        # Cecha 1: Puste Pola
         empty = len(board[board == 0]) / 16.0
 
-        # Cecha 2: Max Tile Log (0-11 dla 2048) -> Skalujemy do 0-1
-        max_val = np.max(board_log) / 11.0
+        # Cecha 2: Max Tile
+        max_val_norm = np.max(board_log) / 16.0 # Zakładamy max 65536 (2^16)
 
         # Cecha 3: Snake Gradient
-        # Max teoretyczny wynik to ok. 1500 (gdy cała plansza pełna idealnie)
-        # Dzielimy przez 1000, żeby rząd wielkości był podobny do reszty
         gradient_scores = [np.sum(board_log * g) for g in self.gradients]
         best_gradient = max(gradient_scores) / 1000.0
 
-
-
-        #1.1 change wektoryzacja
-        # --- ZMIANA TUTAJ: Cecha 4: Merges (Wektoryzacja) ---
-        # Zamiast wolnych pętli for, używamy szybkiego porównywania macierzy numpy.
-        # Porównujemy planszę z jej wersją przesuniętą o 1 w prawo/dół.
-
-        # Czy element [i] == element [i+1] (poziomo) i nie są zerami?
+        # Cecha 4: Merges
         merges_h = (board[:, :-1] == board[:, 1:]) & (board[:, :-1] != 0)
-
-        # Czy element [i] == element [i+1] (pionowo) i nie są zerami?
         merges_v = (board[:-1, :] == board[1:, :]) & (board[:-1, :] != 0)
-
         merges = np.sum(merges_h) + np.sum(merges_v)
-        merges_norm = merges / 10.0
+        merges_norm = min(merges / 10.0, 1.0)
 
-        merges_norm = min(merges_norm, 1.0)
+        # --- NOWE CECHY (Dla zgodności z 6 wagami) ---
 
-        # Zwracamy znormalizowany wektor
-        return np.array([empty, max_val, best_gradient, merges_norm])
-        '''
-        # Cecha 4: Merges (0-48) -> Skalujemy do 0-1
-        merges = 0
-        for r in range(4):
-            for c in range(4):
-                if c < 3 and board[r, c] != 0 and board[r, c] == board[r, c+1]:
-                    merges += 1
-                if r < 3 and board[r, c] != 0 and board[r, c] == board[r+1, c]:
-                    merges += 1
-        merges_norm = merges / 48.0
+        # Cecha 5: KOTWICA (Czy max jest w rogu?)
+        max_pos = np.argmax(board)
+        r, c = divmod(max_pos, 4)
+        is_corner = 0.0
+        if (r == 0 or r == 3) and (c == 0 or c == 3):
+            is_corner = 1.0
 
-        # Zwracamy znormalizowany wektor
-        return np.array([empty, max_val, best_gradient, merges_norm])
-'''
+        # Cecha 6: SĄSIEDZTWO (Czy duzi sąsiedzi są obok?)
+        neighbor_bonus = 0.0
+        for dr, dc in [(-1,0), (1,0), (0,-1), (0,1)]:
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < 4 and 0 <= nc < 4:
+                if board[nr, nc] > 0:
+                    neighbor_bonus += board_log[nr, nc]
+
+        # Normalizacja (zakładamy max ~40 pkt logarytmicznych wokół)
+        neighbor_norm = min(neighbor_bonus / 40.0, 1.0)
+
+        # Zwracamy wektor 6-elementowy!
+        return np.array([empty, max_val_norm, best_gradient, merges_norm, is_corner, neighbor_norm])
 
     def _calculate_smoothness(self, board):
         """

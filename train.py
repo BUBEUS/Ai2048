@@ -37,11 +37,11 @@ def save_logs_to_csv(buffer, filename):
     with open(filename, mode='a', newline='') as f:
         writer = csv.writer(f)
         if not file_exists:
-            # --- ZMIANA NAGŁÓWKA ---
+            # --- ZMIANA: Nagłówek dla 6 cech ---
             header = [
                 "Episode", "Score", "MaxTile", "Moves", "Duration_Sec",
-                "N_Empty", "N_Max", "N_Snake", "N_Merge",  # Normal Weights
-                "P_Empty", "P_Max", "P_Snake", "P_Merge"   # Panic Weights
+                "N_Empty", "N_Max", "N_Snake", "N_Merge", "N_Corner", "N_Neigh",
+                "P_Empty", "P_Max", "P_Snake", "P_Merge", "P_Corner", "P_Neigh"
             ]
             writer.writerow(header)
         writer.writerows(buffer)
@@ -76,28 +76,33 @@ def train():
         game_start_time = time.time()
         moves_count = 0
 
-        # Dynamiczna Alpha
-        # Jeśli ostatnia gra była słaba (poniżej średniej np. 8000),
-        # zwiększamy alphę, żeby AI mocniej zmieniło swoje myślenie.
-        if game.score < 8000 and current_episode > 1000:
-            ai.alpha = 0.001  # Duży krok (szok)
-        else:
-            ai.alpha = 0.0001 # Mały krok (szlifowanie)
+        # --- POPRAWIONA LOGIKA PARAMETRÓW ---
 
-        # Annealing Alpha i Epsilon (Obliczany względem całkowitego postępu, ale z limitem)
-        # Zakładamy, że po 5000 epokach parametry są już minimalne, więc używamy min/max
+        # 1. Obliczamy Bazową Alphę (Annealing)
+        if current_episode < 2000:
+            progress = current_episode / 2000
+            base_alpha = ALPHA_START - ((ALPHA_START - ALPHA_END) * progress)
+        else:
+            base_alpha = ALPHA_END
+
+        # 2. Dynamiczna Alpha (Szok)
+        # Sprawdzamy ŚREDNIĄ historię, a nie wynik obecnej gry (który jest 0)
+        current_avg_score = 0
+        if len(scores_history) > 0:
+            current_avg_score = sum(scores_history) / len(scores_history)
+
+        if current_episode > 1000 and current_avg_score < 10000:
+            ai.alpha = 0.001  # Wstrząs (jeśli średnia słaba)
+        else:
+            ai.alpha = base_alpha # Normalna nauka
+
+        # 3. Permanent Epsilon (Nigdy nie zero)
         if current_episode < 1000:
             epsilon = 0.1 * (1 - (current_episode / 1000))
         else:
-            # Dla długiego treningu utrzymujemy minimalne wartości
-            epsilon = 0.003
+            epsilon = 0.05 # Zostawiamy 5% na eksperymenty (anty-stagnacja)
 
-        if current_episode < 2000:
-            # Liniowy spadek Alpha
-            progress_alpha = current_episode / 2000
-            ai.alpha = ALPHA_START - ((ALPHA_START - ALPHA_END) * progress_alpha)
-        else:
-            ai.alpha = ALPHA_END
+        # ------------------------------------
 
         sim_game = Game2048(game.size) # 1.1 tu wyciagniecie
 
@@ -165,16 +170,14 @@ def train():
             np.max(game.board),
             moves_count,
             round(game_duration, 4),
-            # Wagi Normalne (N_)
-            round(ai.weights_normal[0], 5),
-            round(ai.weights_normal[1], 5),
-            round(ai.weights_normal[2], 5),
-            round(ai.weights_normal[3], 5),
-            # Wagi Paniki (P_)
-            round(ai.weights_panic[0], 5),
-            round(ai.weights_panic[1], 5),
-            round(ai.weights_panic[2], 5),
-            round(ai.weights_panic[3], 5)
+            # Wagi Normalne (6 sztuk)
+            round(ai.weights_normal[0], 5), round(ai.weights_normal[1], 5),
+            round(ai.weights_normal[2], 5), round(ai.weights_normal[3], 5),
+            round(ai.weights_normal[4], 5), round(ai.weights_normal[5], 5),
+            # Wagi Paniki (6 sztuk)
+            round(ai.weights_panic[0], 5), round(ai.weights_panic[1], 5),
+            round(ai.weights_panic[2], 5), round(ai.weights_panic[3], 5),
+            round(ai.weights_panic[4], 5), round(ai.weights_panic[5], 5)
         ]
         csv_buffer.append(log_entry)
         # -----------------------------------------------
@@ -203,8 +206,9 @@ def train():
             start_time = time.time()
 
             print(f"Ep: {current_episode} | Avg Score: {avg_score:.0f} | Avg MaxTile: {avg_max:.0f} | Time (50 ep): {duration:.2f}s")
-            print(f"Wagi NORMAL: E={ai.weights_normal[0]:.2f}, M={ai.weights_normal[1]:.2f}, S={ai.weights_normal[2]:.2f}, Mrg={ai.weights_normal[3]:.2f}")
-            print(f"Wagi PANIC : E={ai.weights_panic[0]:.2f}, M={ai.weights_panic[1]:.2f}, S={ai.weights_panic[2]:.2f}, Mrg={ai.weights_panic[3]:.2f}")
+            print(f"Wagi NORMAL: E={ai.weights_normal[0]:.2f}, M={ai.weights_normal[1]:.2f}, S={ai.weights_normal[2]:.2f}, Mrg={ai.weights_normal[3]:.2f}, Crn={ai.weights_normal[4]:.2f}, Ngh={ai.weights_normal[5]:.2f}")
+            print(f"Wagi PANIC : E={ai.weights_panic[0]:.2f}, M={ai.weights_panic[1]:.2f}, S={ai.weights_panic[2]:.2f}, Mrg={ai.weights_panic[3]:.2f}, Crn={ai.weights_panic[4]:.2f}, Ngh={ai.weights_panic[5]:.2f}")
+
             print("Ostatnia plansza:")
             print(game.board)
             print("-" * 40)
