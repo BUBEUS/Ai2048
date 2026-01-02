@@ -1,34 +1,12 @@
 import tkinter as tk
 from game_2048 import Game2048
 import time
-from ai_player import AIPlayer
 
 class Game2048App:
     def __init__(self, root, size=4):
         self.root = root
         self.size = size
         self.game = Game2048(size)
-
-        # --- DODANO: Inicjalizacja AI ---
-        self.ai = AIPlayer()
-        self.ai.load_model("ai_2048_save.pkl")
-        loaded_episode = self.ai.load_model("ai_2048_save.pkl")
-
-        # --- TEST PRAWDY: Co siedzi w głowie AI? ---
-        print("-" * 30)
-        if loaded_episode > 0:
-            print(f"✅ SUKCES: Wczytano WYTRENOWANY model (Epizod {loaded_episode})")
-        else:
-            print("⚠️ UWAGA: Gram na DOMYŚLNYCH ustawieniach (Brak pliku)")
-
-        print(f"Aktualne wagi AI: {self.ai.weights}")
-        print("-" * 30)
-        # -------------------------------------------
-
-        self.ai_running = False
-        self.sim_game = Game2048(size) # Do symulacji ruchów
-        # ------------------------------
-
         self.root.title("2048 - Tkinter (Animacje)")
         self.root.resizable(False, False)
 
@@ -99,17 +77,6 @@ class Game2048App:
             relief="flat", bd=0, padx=15, pady=5
         )
         self.restart_btn.pack(side="left", padx=10)
-
-
-        # --- DODANO: Przycisk AI ---
-        self.ai_btn = tk.Button(
-            ctrl_frame, text="🤖 Gra AI", command=self.toggle_ai,
-            font=("Helvetica", 14, "bold"), bg="#4CAF50", fg="white",
-            activebackground="#45a049", activeforeground="white",
-            relief="flat", bd=0, padx=15, pady=5
-        )
-        self.ai_btn.pack(side="left", padx=10)
-        # ---------------------------
 
         self.quit_btn = tk.Button(
             ctrl_frame, text="❌ Wyjście", command=self.root.destroy,
@@ -225,39 +192,30 @@ class Game2048App:
 
     # --- HANDLER KLUCZY ---
     def key_handler(self, event):
-        # --- ZMIANA: Blokada klawiszy gdy gra AI ---
-        if self.game_over_shown or self.animation_in_progress or self.ai_running:
+        if self.game_over_shown or self.animation_in_progress:
             return
-        # -------------------------------------------
 
         mapping = {
             'Up': 'up', 'Down': 'down', 'Left': 'left', 'Right': 'right',
             'w': 'up', 's': 'down', 'a': 'left', 'd': 'right'
         }
 
-        key = event.keysym
-        # Obsługa 'w', 's', 'a', 'd' (event.char) oraz strzałek (event.keysym)
-        if key not in mapping and event.char in mapping:
-            key = event.char
-
+        key = event.keysym if len(event.keysym) > 1 else event.char
         if key in mapping:
-            # --- POPRAWKA TUTAJ: Odbieramy 4 wartości ---
-            _, _, done, changed = self.game.move(mapping[key])
-
-            if changed:
-                self.update_board()
-
+            old_board = self.game.board.copy()
+            _, _, done = self.game.move(mapping[key])
+            
+            
+            if not (old_board == self.game.board).all():
+                self.update_board(animate=False) 
+            
             if done:
                 self.game_over_shown = True
-                self.show_game_over()
+                self.root.unbind("<Key>")
+                self.show_popup()
 
     # --- RESET GRY ---
     def restart_game(self):
-        # --- DODANO: Stop AI przy restarcie ---
-        self.ai_running = False
-        self.ai_btn.config(text="🤖 Gra AI", bg="#4CAF50")
-        # --------------------------------------
-
         if self.game_over_popup:
             self.game_over_popup.destroy()
             self.game_over_popup = None
@@ -299,61 +257,6 @@ class Game2048App:
         btn.pack(pady=10)
 
         self.game_over_popup = popup
-
-
-    # --- NOWE METODY: Logika AI ---
-    def toggle_ai(self):
-        if self.ai_running:
-            # Zatrzymaj
-            self.ai_running = False
-            self.ai_btn.config(text="🤖 Gra AI", bg="#4CAF50")
-        else:
-            # Uruchom
-            self.ai_running = True
-            self.ai_btn.config(text="⏹ Stop AI", bg="#f44336")
-            self.run_ai_step()
-
-    def run_ai_step(self):
-        if not self.ai_running or self.game_over_shown:
-            self.ai_running = False
-            self.ai_btn.config(text="🤖 Gra AI", bg="#4CAF50")
-            return
-
-        # 1. Pobierz dostępne ruchy
-        valid_moves = self.game.get_valid_moves()
-        if not valid_moves:
-            self.game_over_shown = True
-            self.show_popup() # Tutaj była nazwa show_game_over w poprzednim kodzie, upewnij się czy masz show_popup czy show_game_over
-            return
-
-        # 2. Wybierz najlepszy ruch (1-step Lookahead)
-        state = self.game.board.copy()
-        best_move, best_v = None, -float('inf')
-
-        for move in valid_moves:
-            self.sim_game.board = state.copy()
-            next_s_sim, _, _ = self.sim_game.move_without_random(move)
-            v = self.ai.get_expected_value(next_s_sim)
-
-            if v > best_v:
-                best_v = v
-                best_move = move
-
-        # 3. Wykonaj ruch w prawdziwej grze
-        if best_move:
-            _, _, done, changed = self.game.move(best_move)
-            if changed:
-                self.update_board(animate=False)
-
-            if done:
-                self.ai_running = False
-                self.ai_btn.config(text="🤖 Gra AI", bg="#4CAF50")
-                self.game_over_shown = True
-                self.show_popup() # Sprawdź nazwę metody popupu w swoim kodzie (show_popup vs show_game_over)
-                return
-
-        # 4. Zaplanuj kolejny krok (np. za 50ms - szybka gra)
-        self.root.after(50, self.run_ai_step)
 
 
 # --------------- program start ---------------

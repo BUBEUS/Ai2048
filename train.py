@@ -4,36 +4,79 @@ import numpy as np
 import math
 import random
 import time
+import os
+import csv
 
 # Parametry
 ALPHA_START = 0.001
 ALPHA_END = 0.0001
 GAMMA = 0.99
 EPISODES = 5000
+LOG_FILE = "training_history.csv"
 
 def get_shaped_reward(game_reward, board):
     if game_reward == 0:
         return 0
     return math.log2(game_reward)
 
+
+# --- NOWA FUNKCJA POMOCNICZA ---
+def save_logs_to_csv(buffer, filename):
+    """Dopisuje bufor danych do pliku CSV."""
+    file_exists = os.path.exists(filename)
+
+    with open(filename, mode='a', newline='') as f:
+        writer = csv.writer(f)
+        # Jeśli plik nie istnieje, dodajemy nagłówek
+        if not file_exists:
+            header = [
+                "Episode", "Score", "MaxTile", "Moves", "Duration_Sec",
+                "Weight_Empty", "Weight_Max", "Weight_Snake", "Weight_Merge"
+            ]
+            writer.writerow(header)
+
+        writer.writerows(buffer)
+    print(f"--> Zapisano {len(buffer)} wpisów do historii treningu.")
+
 def train():
     ai = AIPlayer()
     scores_history = []
     max_tiles_history = []
+    csv_buffer = []
+
+    # --- ZMIANA: Ładowanie stanu ---
+    CHECKPOINT_FILE = "ai_2048_save.pkl"
+    start_episode = ai.load_model(CHECKPOINT_FILE)
+
+    if start_episode > 0:
+        print(f"Wznowiono trening od epizodu: {start_episode}")
+    else:
+        print("Rozpoczynam nowy trening...")
+    # -------------------------------
 
     start_time = time.time()
 
-    print("Start treningu (Normalized Features)...")
+    current_episode = start_episode
+    target_episode = start_episode + EPISODES
 
-    for episode in range(EPISODES):
+    while current_episode < target_episode:
         game = Game2048()
         state = game.board.copy()
         done = False
 
-        # Annealing Alpha i Epsilon
-        progress = episode / EPISODES
-        ai.alpha = ALPHA_START - (ALPHA_START - ALPHA_END) * progress
-        epsilon = max(0.01, 0.2 - progress * 0.2) # Zmniejszona losowość na start
+        game_start_time = time.time()
+        moves_count = 0
+
+        # Annealing Alpha i Epsilon (Obliczany względem całkowitego postępu, ale z limitem)
+        # Zakładamy, że po 5000 epokach parametry są już minimalne, więc używamy min/max
+        if current_episode < 5000:
+            progress = current_episode / 5000
+            ai.alpha = ALPHA_START - (ALPHA_START - ALPHA_END) * progress
+            epsilon = max(0.01, 0.2 - progress * 0.2)
+        else:
+            # Dla długiego treningu utrzymujemy minimalne wartości
+            ai.alpha = ALPHA_END
+            epsilon = 0.01
 
         sim_game = Game2048(game.size) # 1.1 tu wyciagniecie
 
@@ -62,6 +105,7 @@ def train():
 
             # Wykonanie
             next_state_real, raw_reward, done, _ = game.move(best_move)
+            moves_count += 1
 
             # Nauka
             reward_shaped = get_shaped_reward(raw_reward, next_state_real)
@@ -79,6 +123,26 @@ def train():
 
             state = next_state_real.copy()
 
+
+        # Po zakończeniu gry (poza pętlą while not done):
+        current_episode += 1  # Inkrementacja licznika
+
+        # --- NOWY BLOK KODU: Zbieranie danych do CSV ---
+        game_duration = time.time() - game_start_time
+        log_entry = [
+            current_episode,
+            game.score,
+            np.max(game.board),
+            moves_count,
+            round(game_duration, 4),
+            round(ai.weights[0], 5),
+            round(ai.weights[1], 5),
+            round(ai.weights[2], 5),
+            round(ai.weights[3], 5)
+        ]
+        csv_buffer.append(log_entry)
+        # -----------------------------------------------
+
         scores_history.append(game.score)
         max_tiles_history.append(np.max(game.board))
 
@@ -86,8 +150,15 @@ def train():
             scores_history.pop(0)
             max_tiles_history.pop(0)
 
+        # --- ZMIANA: Zapis co 200 epizodów (rozszerzona o CSV) ---
+        if current_episode % 200 == 0:
+            ai.save_model(CHECKPOINT_FILE, current_episode)
+            save_logs_to_csv(csv_buffer, LOG_FILE) # <--- Zapis CSV
+            csv_buffer = [] # <--- Wyczyszczenie bufora
+        # -------------------------------------
+
         # Output co 50 epok
-        if episode % 50 == 0:
+        if current_episode % 50 == 0:
             avg_score = sum(scores_history) / len(scores_history)
             avg_max = sum(max_tiles_history) / len(max_tiles_history)
 
@@ -95,11 +166,17 @@ def train():
             duration = end_time - start_time
             start_time = time.time()
 
-            print(f"Ep: {episode} | Avg Score: {avg_score:.0f} | Avg MaxTile: {avg_max:.0f} | Time (50 ep): {duration:.2f}s")
+            print(f"Ep: {current_episode} | Avg Score: {avg_score:.0f} | Avg MaxTile: {avg_max:.0f} | Time (50 ep): {duration:.2f}s")
             print(f"Wagi: Empty={ai.weights[0]:.2f}, Max={ai.weights[1]:.2f}, Snake={ai.weights[2]:.2f}, Merge={ai.weights[3]:.2f}")
             print("Ostatnia plansza:")
             print(game.board)
             print("-" * 40)
+
+    # --- DODANO NA KOŃCU FUNKCJI ---
+    if csv_buffer:
+        save_logs_to_csv(csv_buffer, LOG_FILE)
+
+    ai.save_model(CHECKPOINT_FILE, current_episode)
 
 if __name__ == "__main__":
     train()

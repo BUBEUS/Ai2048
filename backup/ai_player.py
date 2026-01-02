@@ -1,7 +1,5 @@
 import numpy as np
 import math
-import pickle
-import os
 
 
 class AIPlayer:
@@ -47,7 +45,7 @@ class AIPlayer:
 
 
 
-#1.1 change wektoryzacja
+        #1.1 change wektoryzacja
         # --- ZMIANA TUTAJ: Cecha 4: Merges (Wektoryzacja) ---
         # Zamiast wolnych pętli for, używamy szybkiego porównywania macierzy numpy.
         # Porównujemy planszę z jej wersją przesuniętą o 1 w prawo/dół.
@@ -114,30 +112,3 @@ class AIPlayer:
             total_val += (0.9 * v2 + 0.1 * v4)
 
         return total_val / len(sample_cells)
-
-
-    # --- NOWE METODY DO OBSŁUGI ZAPISU ---
-    def save_model(self, filename, episode_count):
-        """Zapisuje wagi i licznik epizodów do pliku."""
-        data = {
-            'weights': self.weights,
-            'episode': episode_count
-        }
-        with open(filename, 'wb') as f:
-            pickle.dump(data, f)
-        print(f"--> Zapisano checkpoint (Epizod: {episode_count})")
-
-    def load_model(self, filename):
-        """Ładuje wagi i zwraca numer ostatniego epizodu. Zwraca 0 jeśli brak pliku."""
-        if not os.path.exists(filename):
-            return 0
-
-        try:
-            with open(filename, 'rb') as f:
-                data = pickle.load(f)
-                self.weights = data['weights']
-                return data['episode']
-        except Exception as e:
-            print(f"Błąd odczytu zapisu: {e}")
-            return 0
-
