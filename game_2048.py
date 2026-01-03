@@ -145,7 +145,8 @@ if __name__ == "__main__":
             print("Nieprawidłowy ruch!")
             continue
 
-        board, reward, done = game.move(mapping[move])
+        # ZMIANA: Odbieramy 4 wartości zamiast 3
+        board, reward, done, changed = game.move(mapping[move])
         game.print_board()
         if done:
             print("Koniec gry!")

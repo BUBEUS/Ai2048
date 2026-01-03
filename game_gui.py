@@ -2,6 +2,8 @@ import tkinter as tk
 from game_2048 import Game2048
 import time
 from ai_player import AIPlayer
+from benchmark_module import Benchmark
+import threading # Żeby GUI nie zamarzło na amen (choć przy update może migać)
 
 class Game2048App:
     def __init__(self, root, size=4):
@@ -76,6 +78,8 @@ class Game2048App:
         self.draw_grid()
         self.update_board(animate=False)
 
+
+
     # --- KONFIGURACJA KOLORÓW ---
     def _get_colors(self):
         return {
@@ -121,6 +125,10 @@ class Game2048App:
             relief="flat", bd=0, padx=15, pady=5
         )
         self.quit_btn.pack(side="left", padx=10)
+
+        # W sekcji gdzie masz inne przyciski (np. ctrl_frame)
+        self.btn_1k = tk.Button(ctrl_frame, text="1kAVG", command=self.start_1k_benchmark, bg="purple", fg="white")
+        self.btn_1k.pack(side=tk.LEFT, padx=5)
 
     # --- RYSOWANIE SIATKI ---
     def draw_grid(self):
@@ -355,6 +363,38 @@ class Game2048App:
 
         # 4. Zaplanuj kolejny krok (50ms)
         self.root.after(50, self.run_ai_step)
+
+
+    def start_1k_benchmark(self):
+        self.btn_1k.config(state=tk.DISABLED, text="Pracuję...")
+        threading.Thread(target=self._run_benchmark_thread, daemon=True).start()
+
+    def _run_benchmark_thread(self):
+        bench = Benchmark(self.ai)
+
+        # ZMIANA: Callback przyjmuje teraz current_score
+        def visual_update(final_board, current_game, total_games, current_score):
+            self.root.after(0, lambda: self._update_gui_for_benchmark(final_board, current_game, total_games, current_score))
+
+        bench.run(update_gui_callback=visual_update)
+
+        self.root.after(0, lambda: self.btn_1k.config(state=tk.NORMAL, text="1kAVG"))
+        self.root.after(0, lambda: self.score_label.config(text=f"Koniec", fg='#776e65'))
+
+    def _update_gui_for_benchmark(self, board, current, total, current_score):
+        # Aktualizacja wizualna planszy
+        self.game.board = board
+        # Ważne: musimy ręcznie ustawić self.game.score, żeby update_board wyświetlił dobry wynik
+        self.game.score = current_score
+
+        self.update_board(animate=False)
+
+        # Dodatkowo wymuszamy aktualizację labela (dla pewności, choć update_board to robi)
+        self.score_label.config(text=str(current_score), fg='#776e65')
+
+        # Tytuł okna pokazuje postęp
+        self.root.title(f"Benchmark: Gra {current}/{total}")
+        self.root.update_idletasks()
 
 
 # --------------- program start ---------------

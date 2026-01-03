@@ -1,3 +1,5 @@
+from sympy.abc import epsilon
+
 from game_2048 import Game2048
 from ai_player import AIPlayer
 import numpy as np
@@ -91,16 +93,9 @@ def train():
         if len(scores_history) > 0:
             current_avg_score = sum(scores_history) / len(scores_history)
 
-        if current_episode > 1000 and current_avg_score < 10000:
-            ai.alpha = 0.001  # Wstrząs (jeśli średnia słaba)
-        else:
-            ai.alpha = base_alpha # Normalna nauka
+        ai.alpha = 0.00005
+        epsilon = 0
 
-        # 3. Permanent Epsilon (Nigdy nie zero)
-        if current_episode < 1000:
-            epsilon = 0.1 * (1 - (current_episode / 1000))
-        else:
-            epsilon = 0.05 # Zostawiamy 5% na eksperymenty (anty-stagnacja)
 
         # ------------------------------------
 
