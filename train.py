@@ -94,7 +94,7 @@ def train():
             current_avg_score = sum(scores_history) / len(scores_history)
 
         ai.alpha = 0.00005
-        epsilon = 0
+        epsilon = 0 # nieuzywana
 
 
         # ------------------------------------
@@ -106,7 +106,7 @@ def train():
             if not valid_moves:
                 break
 
-            # Epsilon-Greedy
+            # Epsilon-Greedy nie używamy
             if random.random() < epsilon:
                 best_move = random.choice(valid_moves)
             else:
