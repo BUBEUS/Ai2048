@@ -127,7 +127,7 @@ class Game2048App:
         self.quit_btn.pack(side="left", padx=10)
 
         # W sekcji gdzie masz inne przyciski (np. ctrl_frame)
-        self.btn_1k = tk.Button(ctrl_frame, text="1kAVG", command=self.start_1k_benchmark, bg="purple", fg="white")
+        self.btn_1k = tk.Button(ctrl_frame, text="Test", command=self.start_1k_benchmark, bg="purple", fg="white")
         self.btn_1k.pack(side=tk.LEFT, padx=5)
 
     # --- RYSOWANIE SIATKI ---

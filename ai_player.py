@@ -8,13 +8,16 @@ class AIPlayer:
     def __init__(self):
         # --- ZMIANA: Dwa zestawy wag ---
         # 0: Empty, 1: MaxTile, 2: Gradient, 3: Merge, 4: CORNER, 5: NEIGHBOR
-        #self.weights_normal = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
-        #self.weights_panic  = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
+        self.weights_normal = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
+        self.weights_panic  = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
 
-        self.weights_normal = np.array([67.0, 96.0, 70.0, 15.0, 92.0, 41.0])
+        #self.weights_normal = np.array([59.9187, 82.6526, 60.0667, 15.1476, 73.9965, 36.1539])
+        #self.weights_panic  = np.array([26.1066, 111.3576, 98.2233, 26.5400, 86.6307, 62.5051])
+
+        #self.weights_normal = np.array([67.0, 96.0, 70.0, 15.0, 92.0, 41.0])
 
         # W panice pozwalamy na więcej chaosu (Merge i Empty w górę)
-        self.weights_panic  = np.array([32.0, 137.0, 122.0, 29.0, 122.0, 74.0])
+        #self.weights_panic  = np.array([32.0, 137.0, 122.0, 29.0, 122.0, 74.0])
 
 
 

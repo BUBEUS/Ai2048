@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import matplotlib.patheffects as path_effects
+import matplotlib.patches as patches
 import numpy as np
 import os
 import time
@@ -8,14 +9,21 @@ from game_2048 import Game2048
 from ai_player import AIPlayer
 import concurrent.futures
 
+# Próba ustawienia ładniejszego stylu wykresów
+try:
+    plt.style.use('seaborn-v0_8-white')
+except:
+    pass
+
 # --- KOLORY DO WIZUALIZACJI PLANSZ ---
+GRID_COLOR = '#bbada0' # Kolor tła siatki gry
 CELL_COLORS = {
     0: '#cdc1b4', 2: '#eee4da', 4: '#ede0c8', 8: '#f2b179',
     16: '#f59563', 32: '#f67c5f', 64: '#f65e3b', 128: '#edcf72',
     256: '#edcc61', 512: '#edc850', 1024: '#edc53f', 2048: '#edc22e',
     'super': '#3c3a32'
 }
-TEXT_COLORS = { 2: '#776e65', 4: '#776e65', 'other': 'white'}
+TEXT_COLORS = { 2: '#776e65', 4: '#776e65', 'other': '#f9f6f2'}
 
 def run_single_game(weights_normal, weights_panic, log_table):
     """
@@ -34,7 +42,6 @@ def run_single_game(weights_normal, weights_panic, log_table):
     done = False
     state = game.board.copy()
 
-    # --- NOWOŚĆ: Lokalna heatmapa dla tej jednej gry ---
     local_heatmap = np.zeros((4, 4), dtype=float)
     moves_in_game = 0
 
@@ -54,13 +61,9 @@ def run_single_game(weights_normal, weights_panic, log_table):
 
         state, _, done, _ = game.move(best_move)
 
-        # --- REJESTRACJA STANU (Snapshot strategii) ---
-        # Dodajemy planszę do heatmapy PO wykonaniu ruchu.
-        # Dzięki temu widzimy "zdrowy" stan gry, a nie tylko game over.
         local_heatmap += game.board
         moves_in_game += 1
 
-    # Zwracamy też local_heatmap i liczbę ruchów
     return game.score, np.max(game.board), game.board, local_heatmap, moves_in_game
 
 class Benchmark:
@@ -88,7 +91,6 @@ class Benchmark:
         scores = []
         max_tiles = []
 
-        # Globalna suma ze wszystkich ruchów we wszystkich grach
         global_heatmap_sum = np.zeros((4, 4), dtype=float)
         total_moves_count = 0
 
@@ -114,13 +116,11 @@ class Benchmark:
             futures = [executor.submit(run_single_game, w_norm, w_panic, l_table) for _ in range(self.games_to_run)]
 
             for i, future in enumerate(concurrent.futures.as_completed(futures)):
-                # Odbieramy rozszerzone dane
                 score, max_val, final_board, local_heatmap, moves_cnt = future.result()
 
                 scores.append(score)
                 max_tiles.append(max_val)
 
-                # Agregacja danych "Live"
                 global_heatmap_sum += local_heatmap
                 total_moves_count += moves_cnt
 
@@ -138,8 +138,6 @@ class Benchmark:
         duration = time.time() - start_time
         avg_score = sum(scores) / len(scores)
 
-        # Obliczamy średnią wartość klocka NA RUCH
-        # (Suma wartości klocków przez całą historię) / (Całkowita liczba ruchów)
         heatmap_avg = global_heatmap_sum / total_moves_count if total_moves_count > 0 else global_heatmap_sum
 
         print(f"--> Benchmark zakończony w {duration:.2f}s. Średnia: {avg_score:.0f}")
@@ -152,7 +150,7 @@ class Benchmark:
 
         self._generate_main_plot(scores, max_tiles, heatmap_avg, min_score, max_score, main_plot_file)
 
-        print("--> Zapisywanie plansz ekstremalnych...")
+        print("--> Zapisywanie plansz ekstremalnych (High Quality)...")
         self._save_board_image(best_board, max_score, "NAJLEPSZY WYNIK", best_plot_file)
         self._save_board_image(worst_board, min_score, "NAJGORSZY WYNIK", worst_plot_file)
 
@@ -162,59 +160,94 @@ class Benchmark:
         except: pass
 
     def _save_board_image(self, board, score, title_prefix, filename):
+        """
+        Rysuje planszę używając prostokątów (patches), aby imitować wygląd gry.
+        """
         fig, ax = plt.subplots(figsize=(6, 6))
         ax.set_axis_off()
 
-        table = plt.table(cellText=board, loc='center', cellLoc='center', bbox=[0, 0, 1, 1])
+        # Parametry siatki
+        padding = 0.1
+        cell_size = 1.0
+        grid_width = 4 * cell_size + 5 * padding
 
-        for i in range(4):
-            for j in range(4):
-                val = int(board[i, j])
-                cell = table[i, j]
+        # Tło całej siatki
+        ax.set_xlim(0, grid_width)
+        ax.set_ylim(0, grid_width)
+        bg_rect = patches.Rectangle((0, 0), grid_width, grid_width, linewidth=0, facecolor=GRID_COLOR)
+        ax.add_patch(bg_rect)
+
+        # Rysowanie komórek
+        for row in range(4):
+            for col in range(4):
+                val = int(board[row, col])
+
+                # Obliczanie pozycji (odwracamy oś Y, bo w macierzy 0 jest na górze)
+                x_pos = padding + col * (cell_size + padding)
+                y_pos = padding + (3 - row) * (cell_size + padding)
+
+                # Kolor tła kafelka
                 bg_color = CELL_COLORS.get(val, CELL_COLORS['super'])
-                cell.set_facecolor(bg_color)
-                text_color = TEXT_COLORS.get(val, TEXT_COLORS['other'])
-                cell.get_text().set_color(text_color)
 
-                font_size = 20
-                if val > 1000: font_size = 16
-                if val > 10000: font_size = 14
-                cell.get_text().set_fontsize(font_size)
-                cell.get_text().set_fontweight('bold')
+                # Rysowanie kafelka (zaokrąglone rogi nie są łatwe w matplotlib,
+                # ale zwykły prostokąt z odpowiednimi kolorami wygląda dobrze)
+                rect = patches.Rectangle((x_pos, y_pos), cell_size, cell_size,
+                                         linewidth=0, facecolor=bg_color)
+                ax.add_patch(rect)
 
-                if val == 0: cell.get_text().set_text("")
+                # Rysowanie tekstu
+                if val > 0:
+                    text_color = TEXT_COLORS.get(val, TEXT_COLORS['other'])
 
-        plt.title(f"{title_prefix}\nWynik: {score}", fontsize=16, fontweight='bold', pad=20)
-        plt.savefig(filename, dpi=100, bbox_inches='tight')
+                    # Dynamiczny rozmiar czcionki
+                    font_size = 35
+                    if val > 100: font_size = 30
+                    if val > 1000: font_size = 24
+                    if val > 10000: font_size = 20
+
+                    ax.text(x_pos + cell_size/2, y_pos + cell_size/2, str(val),
+                            ha='center', va='center', color=text_color,
+                            fontsize=font_size, fontweight='bold', fontfamily='sans-serif')
+
+        # Tytuł
+        plt.title(f"{title_prefix}\nWynik: {score}", fontsize=18, fontweight='bold', color='#776e65', pad=20)
+
+        # Zapis w wysokiej jakości
+        plt.savefig(filename, dpi=150, bbox_inches='tight', facecolor='#faf8ef')
         plt.close(fig)
 
     def _generate_main_plot(self, scores, max_tiles, heatmap_avg, min_score, max_score, filename):
-        fig = plt.figure(figsize=(14, 10))
-        gs = fig.add_gridspec(3, 3)
+        fig = plt.figure(figsize=(16, 12), facecolor='#faf8ef')
+        gs = fig.add_gridspec(3, 3, wspace=0.3, hspace=0.3)
 
         # 1. MAPA CIEPŁA (AVERAGE PER MOVE)
         ax_map = fig.add_subplot(gs[0:2, 0:2])
 
-        # Logarytmowanie dla czytelności (wartości będą mniejsze niż wcześniej, bo dzielimy przez ilość ruchów)
-        # ale relacje między polami pozostaną te same.
         heatmap_log = np.log2(heatmap_avg + 1)
 
-        im = ax_map.imshow(heatmap_log, cmap='magma', interpolation='nearest')
-        ax_map.set_title("Średnie Wartości Klocków (ANALIZA WSZYSTKICH RUCHÓW)", fontsize=14, fontweight='bold')
+        # Używamy 'inferno' dla bardziej "gorącego" wyglądu, lub 'magma'
+        im = ax_map.imshow(heatmap_log, cmap='inferno', interpolation='nearest')
+        ax_map.set_title("Analiza Strategii (Średnia Wartość Pola na Ruch)", fontsize=16, fontweight='bold', color='#776e65', pad=15)
+
+        # Dodanie siatki oddzielającej pola na heatmapie
+        ax_map.set_xticks(np.arange(-.5, 4, 1), minor=True)
+        ax_map.set_yticks(np.arange(-.5, 4, 1), minor=True)
+        ax_map.grid(which='minor', color='white', linestyle='-', linewidth=2)
+        ax_map.tick_params(which='minor', bottom=False, left=False)
         ax_map.axis('off')
 
         for i in range(4):
             for j in range(4):
                 val = heatmap_avg[i, j]
-                # Formatowanie wartości (teraz mogą być mniejsze, więc jedno miejsce po przecinku)
                 val_str = f"{val:.1f}"
-
+                # Biały tekst z mocnym czarnym obrysem dla kontrastu
                 text = ax_map.text(j, i, val_str, ha="center", va="center",
-                                   color='white', fontsize=12, fontweight='bold')
-                text.set_path_effects([path_effects.withStroke(linewidth=2, foreground='black')])
+                                   color='white', fontsize=13, fontweight='bold')
+                text.set_path_effects([path_effects.withStroke(linewidth=3, foreground='black')])
 
         cbar = plt.colorbar(im, ax=ax_map, fraction=0.046, pad=0.04)
-        cbar.set_label('Skala Logarytmiczna', rotation=270, labelpad=15)
+        cbar.set_label('Skala Logarytmiczna (Log2)', rotation=270, labelpad=20, fontsize=12)
+        cbar.outline.set_linewidth(0)
 
         # 2. STATYSTYKI
         ax_stats = fig.add_subplot(gs[0:2, 2])
@@ -222,50 +255,58 @@ class Benchmark:
 
         counts = Counter(max_tiles)
         total = len(max_tiles)
-        sorted_tiles = sorted(counts.keys())
+        sorted_tiles = sorted(counts.keys(), reverse=True)
 
-        text_str = "Dystrybucja MaxTile:\n"
-        text_str += "-" * 20 + "\n"
+        text_str = "DYSTRYBUCJA MAX KLOCKA:\n"
+        text_str += "━" * 25 + "\n"
         for tile in sorted_tiles:
-            if tile >= 256:
+            if tile >= 128: # Pokazujemy też mniejsze, jeśli to był max
                 count = counts[tile]
                 perc = (count / total) * 100
-                text_str += f"{tile}:  {count} ({perc:.1f}%)\n"
+                # Ładniejsze formatowanie z wyrównaniem
+                text_str += f"{tile:<5} : {count:>4} gier ({perc:>5.1f}%)\n"
 
         avg_score = sum(scores) / len(scores)
 
         text_str += "\n\nSTATYSTYKI PUNKTOWE:\n"
-        text_str += "-" * 20 + "\n"
-        text_str += f"Średnia: {avg_score:.0f}\n"
-        text_str += f"Max:     {max_score}\n"
-        text_str += f"Min:     {min_score}\n"
+        text_str += "━" * 25 + "\n"
+        text_str += f"Średnia : {avg_score:>8.0f}\n"
+        text_str += f"Max     : {max_score:>8}\n"
+        text_str += f"Min     : {min_score:>8}\n"
 
-        ax_stats.text(0.1, 0.9, text_str, transform=ax_stats.transAxes, fontsize=12, verticalalignment='top', fontfamily='monospace')
+        # Umieszczenie tekstu w ładnym "pudełku"
+        props = dict(boxstyle='round,pad=1', facecolor='#f9f6f2', edgecolor='#bbada0', linewidth=2)
+        ax_stats.text(0.5, 0.5, text_str, transform=ax_stats.transAxes, fontsize=13,
+                      verticalalignment='center', horizontalalignment='center',
+                      fontfamily='monospace', bbox=props, color='#776e65')
 
         # 3. WAGI
-        ax_weights = fig.add_subplot(gs[2, 0:2])
+        ax_weights = fig.add_subplot(gs[2, 0:3]) # Rozciągamy na całą szerokość
         ax_weights.axis('off')
 
         w_norm = self.ai.weights_normal
         w_panic = self.ai.weights_panic
 
         labels = ["Empty", "MaxTile", "Gradient", "Merge", "Corner", "Neighbor"]
-        def format_weights(weights):
-            s = ""
+
+        def format_weights_nice(weights):
+            parts = []
             for i, val in enumerate(weights):
                 name = labels[i] if i < len(labels) else f"W{i}"
-                s += f"{name}: {val:.2f} | "
-            return s.strip(" | ")
+                parts.append(f"{name}: {val:.2f}")
+            return "   ".join(parts)
 
-        weights_text = "AKTUALNE WAGI:\n"
-        weights_text += f"NORMAL: {format_weights(w_norm)}\n"
-        weights_text += f"PANIC : {format_weights(w_panic)}"
+        weights_text = "AKTUALNA KONFIGURACJA WAG AI\n"
+        weights_text += "━" * 60 + "\n"
+        weights_text += f"Tryb NORMAL (Budowanie) :  {format_weights_nice(w_norm)}\n"
+        weights_text += f"Tryb PANIC  (Ratunek)   :  {format_weights_nice(w_panic)}"
 
+        props_w = dict(boxstyle='round,pad=0.8', facecolor='#edf2f7', edgecolor='#cbd5e0', linewidth=2)
         ax_weights.text(0.5, 0.5, weights_text, transform=ax_weights.transAxes,
-                        ha="center", va="center", fontsize=10,
-                        bbox=dict(boxstyle="round,pad=0.5", fc="white", ec="gray", alpha=0.8))
+                        ha="center", va="center", fontsize=12, fontfamily='monospace',
+                        bbox=props_w, color='#2d3748')
 
         plt.tight_layout()
         print(f"--> Zapisywanie głównego wykresu do: {filename}")
-        plt.savefig(filename, dpi=120)
+        plt.savefig(filename, dpi=120, facecolor='#faf8ef')
         plt.close(fig)

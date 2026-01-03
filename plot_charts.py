@@ -39,14 +39,17 @@ def plot_weights(df):
     # Normal
     ax1.set_title('Wagi NORMAL (Budowanie)', fontsize=14, fontweight='bold')
     ax1.set_ylabel('Wartość', fontsize=12)
+
     weights_normal = {
         'N_Snake': ('green', 'Snake'), 'N_Corner': ('purple', 'Corner'),
         'N_Neigh': ('brown', 'Neighbor'), 'N_Merge': ('red', 'Merge'),
         'N_Empty': ('gray', 'Empty'), 'N_Max': ('orange', 'MaxTile')
     }
+
     for col, (color, label) in weights_normal.items():
         if col in df.columns:
             ax1.plot(df['Episode'], df[col], color=color, label=label, linewidth=2, alpha=0.8)
+
     ax1.legend(loc='upper left', ncol=2)
     ax1.grid(True)
 
@@ -54,14 +57,17 @@ def plot_weights(df):
     ax2.set_title('Wagi PANIC (Ratunek)', fontsize=14, fontweight='bold')
     ax2.set_ylabel('Wartość', fontsize=12)
     ax2.set_xlabel('Epizody', fontsize=12)
+
     weights_panic = {
         'P_Snake': ('green', 'Snake'), 'P_Corner': ('purple', 'Corner'),
         'P_Merge': ('red', 'Merge'), 'P_Empty': ('gray', 'Empty'),
         'P_Max': ('orange', 'MaxTile')
     }
+
     for col, (color, label) in weights_panic.items():
         if col in df.columns:
             ax2.plot(df['Episode'], df[col], color=color, label=label, linewidth=2, alpha=0.8)
+
     ax2.legend(loc='upper left', ncol=2)
     ax2.grid(True)
 
@@ -125,18 +131,20 @@ def generate_charts():
     if not os.path.exists(CSV_FILE):
         print(f"Brak pliku {CSV_FILE}")
         return
+
     try:
         df = pd.read_csv(CSV_FILE)
         if df.empty: return
-    except: return
+    except:
+        return
 
     setup_style()
 
     # Generowanie 4 niezależnych zestawów
-    plot_just_scores(df)      # 1. Wyniki
-    plot_weights(df)          # 2. Wagi
-    plot_tiles_split(df)      # 3. Klocki (Max i Średni)
-    plot_moves_only(df)       # 4. Ruchy
+    plot_just_scores(df)   # 1. Wyniki
+    plot_weights(df)       # 2. Wagi
+    plot_tiles_split(df)   # 3. Klocki (Max i Średni)
+    plot_moves_only(df)    # 4. Ruchy
 
     print("--> Zakończono generowanie wszystkich 4 wykresów.")
 
@@ -146,7 +154,8 @@ def generate_charts():
             os.startfile("wykres_wagi.png")
             os.startfile("wykres_klocki.png")
             os.startfile("wykres_ruchy.png")
-    except: pass
+    except:
+        pass
 
 if __name__ == "__main__":
     generate_charts()
