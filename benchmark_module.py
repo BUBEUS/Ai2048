@@ -9,14 +9,12 @@ from game_2048 import Game2048
 from ai_player import AIPlayer
 import concurrent.futures
 
-# Próba ustawienia ładniejszego stylu wykresów
 try:
     plt.style.use('seaborn-v0_8-white')
 except:
     pass
 
-# --- KOLORY DO WIZUALIZACJI PLANSZ ---
-GRID_COLOR = '#bbada0' # Kolor tła siatki gry
+GRID_COLOR = '#bbada0' 
 CELL_COLORS = {
     0: '#cdc1b4', 2: '#eee4da', 4: '#ede0c8', 8: '#f2b179',
     16: '#f59563', 32: '#f67c5f', 64: '#f65e3b', 128: '#edcf72',
@@ -27,7 +25,17 @@ TEXT_COLORS = { 2: '#776e65', 4: '#776e65', 'other': '#f9f6f2'}
 
 def run_single_game(weights_normal, weights_panic, log_table):
     """
-    Uruchamia grę i zbiera heatmapę z KAŻDEGO RUCHU.
+    Uruchamia pojedynczą grę w izolowanym procesie.
+    
+    Zbiera heatmapę (częstotliwość odwiedzin pól) dla każdego ruchu.
+
+    Args:
+        weights_normal (np.ndarray): Wagi dla trybu normalnego.
+        weights_panic (np.ndarray): Wagi dla trybu paniki.
+        log_table (np.ndarray): Tablica prekomputowanych logarytmów (nieużywana w tej wersji, ale zachowana).
+
+    Returns:
+        tuple: (wynik, max_kafelek, plansza_końcowa, lokalna_heatmapa, liczba_ruchów)
     """
     ai = AIPlayer()
     ai.weights_normal = weights_normal
@@ -67,6 +75,19 @@ def run_single_game(weights_normal, weights_panic, log_table):
     return game.score, np.max(game.board), game.board, local_heatmap, moves_in_game
 
 class Benchmark:
+    """
+    Moduł testujący wydajność AI na dużej próbie gier.
+    
+    Generuje raporty graficzne z:
+    1. Heatmapą (które pola są najważniejsze).
+    2. Statystykami (rozkład max klocka).
+    3. Wizualizacją najlepszej i najgorszej gry.
+
+    Attributes:
+        ai (AIPlayer): Instancja agenta AI do przetestowania.
+        games_to_run (int): Liczba gier do symulacji (domyślnie 1000).
+        output_folder (str): Folder na wyniki.
+    """
     def __init__(self, ai_player):
         self.ai = ai_player
         self.games_to_run = 1000
@@ -80,6 +101,7 @@ class Benchmark:
                 print(f"Błąd tworzenia folderu: {e}")
 
     def get_next_base_filename(self):
+        """Generuje unikalną nazwę pliku wyjściowego (inkrementacja licznika)."""
         i = 1
         while True:
             base = os.path.join(self.output_folder, f"{self.output_prefix}-{i:02d}")
@@ -88,6 +110,12 @@ class Benchmark:
             i += 1
 
     def run(self, update_gui_callback=None):
+        """
+        Uruchamia główną pętlę benchmarku przy użyciu wielowątkowości (ProcessPoolExecutor).
+
+        Args:
+            update_gui_callback (function, optional): Funkcja zwrotna do aktualizacji paska postępu w GUI.
+        """
         scores = []
         max_tiles = []
 
@@ -166,40 +194,32 @@ class Benchmark:
         fig, ax = plt.subplots(figsize=(6, 6))
         ax.set_axis_off()
 
-        # Parametry siatki
         padding = 0.1
         cell_size = 1.0
         grid_width = 4 * cell_size + 5 * padding
 
-        # Tło całej siatki
         ax.set_xlim(0, grid_width)
         ax.set_ylim(0, grid_width)
         bg_rect = patches.Rectangle((0, 0), grid_width, grid_width, linewidth=0, facecolor=GRID_COLOR)
         ax.add_patch(bg_rect)
 
-        # Rysowanie komórek
         for row in range(4):
             for col in range(4):
                 val = int(board[row, col])
 
-                # Obliczanie pozycji (odwracamy oś Y, bo w macierzy 0 jest na górze)
                 x_pos = padding + col * (cell_size + padding)
                 y_pos = padding + (3 - row) * (cell_size + padding)
 
-                # Kolor tła kafelka
                 bg_color = CELL_COLORS.get(val, CELL_COLORS['super'])
 
-                # Rysowanie kafelka (zaokrąglone rogi nie są łatwe w matplotlib,
-                # ale zwykły prostokąt z odpowiednimi kolorami wygląda dobrze)
+    
                 rect = patches.Rectangle((x_pos, y_pos), cell_size, cell_size,
                                          linewidth=0, facecolor=bg_color)
                 ax.add_patch(rect)
 
-                # Rysowanie tekstu
                 if val > 0:
                     text_color = TEXT_COLORS.get(val, TEXT_COLORS['other'])
 
-                    # Dynamiczny rozmiar czcionki
                     font_size = 35
                     if val > 100: font_size = 30
                     if val > 1000: font_size = 24
@@ -209,27 +229,23 @@ class Benchmark:
                             ha='center', va='center', color=text_color,
                             fontsize=font_size, fontweight='bold', fontfamily='sans-serif')
 
-        # Tytuł
         plt.title(f"{title_prefix}\nWynik: {score}", fontsize=18, fontweight='bold', color='#776e65', pad=20)
 
-        # Zapis w wysokiej jakości
         plt.savefig(filename, dpi=150, bbox_inches='tight', facecolor='#faf8ef')
         plt.close(fig)
 
     def _generate_main_plot(self, scores, max_tiles, heatmap_avg, min_score, max_score, filename):
+        """Generuje główny raport zbiorczy (GridSpec: Heatmapa, Statystyki, Wagi)."""
         fig = plt.figure(figsize=(16, 12), facecolor='#faf8ef')
         gs = fig.add_gridspec(3, 3, wspace=0.3, hspace=0.3)
 
-        # 1. MAPA CIEPŁA (AVERAGE PER MOVE)
         ax_map = fig.add_subplot(gs[0:2, 0:2])
 
         heatmap_log = np.log2(heatmap_avg + 1)
 
-        # Używamy 'inferno' dla bardziej "gorącego" wyglądu, lub 'magma'
         im = ax_map.imshow(heatmap_log, cmap='inferno', interpolation='nearest')
         ax_map.set_title("Analiza Strategii (Średnia Wartość Pola na Ruch)", fontsize=16, fontweight='bold', color='#776e65', pad=15)
 
-        # Dodanie siatki oddzielającej pola na heatmapie
         ax_map.set_xticks(np.arange(-.5, 4, 1), minor=True)
         ax_map.set_yticks(np.arange(-.5, 4, 1), minor=True)
         ax_map.grid(which='minor', color='white', linestyle='-', linewidth=2)
@@ -240,7 +256,6 @@ class Benchmark:
             for j in range(4):
                 val = heatmap_avg[i, j]
                 val_str = f"{val:.1f}"
-                # Biały tekst z mocnym czarnym obrysem dla kontrastu
                 text = ax_map.text(j, i, val_str, ha="center", va="center",
                                    color='white', fontsize=13, fontweight='bold')
                 text.set_path_effects([path_effects.withStroke(linewidth=3, foreground='black')])
@@ -249,7 +264,7 @@ class Benchmark:
         cbar.set_label('Skala Logarytmiczna (Log2)', rotation=270, labelpad=20, fontsize=12)
         cbar.outline.set_linewidth(0)
 
-        # 2. STATYSTYKI
+
         ax_stats = fig.add_subplot(gs[0:2, 2])
         ax_stats.axis('off')
 
@@ -260,10 +275,10 @@ class Benchmark:
         text_str = "DYSTRYBUCJA MAX KLOCKA:\n"
         text_str += "━" * 25 + "\n"
         for tile in sorted_tiles:
-            if tile >= 128: # Pokazujemy też mniejsze, jeśli to był max
+            if tile >= 128: 
                 count = counts[tile]
                 perc = (count / total) * 100
-                # Ładniejsze formatowanie z wyrównaniem
+
                 text_str += f"{tile:<5} : {count:>4} gier ({perc:>5.1f}%)\n"
 
         avg_score = sum(scores) / len(scores)
@@ -274,14 +289,13 @@ class Benchmark:
         text_str += f"Max     : {max_score:>8}\n"
         text_str += f"Min     : {min_score:>8}\n"
 
-        # Umieszczenie tekstu w ładnym "pudełku"
+ 
         props = dict(boxstyle='round,pad=1', facecolor='#f9f6f2', edgecolor='#bbada0', linewidth=2)
         ax_stats.text(0.5, 0.5, text_str, transform=ax_stats.transAxes, fontsize=13,
                       verticalalignment='center', horizontalalignment='center',
                       fontfamily='monospace', bbox=props, color='#776e65')
 
-        # 3. WAGI
-        ax_weights = fig.add_subplot(gs[2, 0:3]) # Rozciągamy na całą szerokość
+        ax_weights = fig.add_subplot(gs[2, 0:3]) 
         ax_weights.axis('off')
 
         w_norm = self.ai.weights_normal

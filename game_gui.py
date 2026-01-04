@@ -3,41 +3,48 @@ from game_2048 import Game2048
 import time
 from ai_player import AIPlayer
 from benchmark_module import Benchmark
-import threading # Żeby GUI nie zamarzło na amen (choć przy update może migać)
+import threading 
 
 class Game2048App:
+    """
+    Aplikacja GUI do gry 2048 oparta na bibliotece Tkinter.
+
+    Integruje manualną rozgrywkę z automatycznym graczem (AI) oraz
+    umożliwia uruchamianie benchmarków w tle.
+
+    Attributes:
+        root (tk.Tk): Główny obiekt okna Tkinter.
+        game (Game2048): Instancja logiki gry.
+        ai (AIPlayer): Instancja sztucznej inteligencji.
+        canvas (tk.Canvas): Płótno do rysowania kafelków.
+    """
     def __init__(self, root, size=4):
         self.root = root
         self.size = size
         self.game = Game2048(size)
 
-        # --- DODANO: Inicjalizacja AI ---
         self.ai = AIPlayer()
 
-        # Próba wczytania modelu
         loaded_episode = self.ai.load_model("ai_2048_save.pkl")
 
-        # --- TEST PRAWDY: Co siedzi w głowie AI? ---
         print("-" * 40)
         if loaded_episode > 0:
             print(f"✅ SUKCES: Wczytano WYTRENOWANY model (Epizod {loaded_episode})")
         else:
             print("⚠️ UWAGA: Gram na DOMYŚLNYCH ustawieniach (Brak pliku)")
 
-        # Wyświetlamy oba zestawy wag (Dual-Weights)
-        # Dzięki temu widzisz, czy AI ma "dwubiegunowość"
+    
         print(f"🧠 Wagi NORMAL (Spokój): {self.ai.weights_normal}")
         print(f"🔥 Wagi PANIC  (Kryzys): {self.ai.weights_panic}")
         print("-" * 40)
-        # -------------------------------------------
+        
 
         self.ai_running = False
-        self.sim_game = Game2048(size)  # Do symulacji ruchów
+        self.sim_game = Game2048(size)  
 
         self.root.title("2048 - Tkinter (AI Dual-Mode)")
         self.root.resizable(False, False)
 
-        # --- Konfiguracja i stałe ---
         self.TILE_SIZE = 100
         self.PADDING = 12
         self.CANVAS_SIZE = self.size * (self.TILE_SIZE + self.PADDING) + self.PADDING
@@ -80,7 +87,6 @@ class Game2048App:
 
 
 
-    # --- KONFIGURACJA KOLORÓW ---
     def _get_colors(self):
         return {
             0: {'bg': '#cdc1b4', 'fg': '#776e65', 'font_size': 32},
@@ -99,7 +105,6 @@ class Game2048App:
             8192: {'bg': '#3c3a32', 'fg': 'white', 'font_size': 24}
         }
 
-    # --- TWORZENIE KONTROLEK ---
     def _create_controls(self, ctrl_frame):
         self.restart_btn = tk.Button(
             ctrl_frame, text="🔄 Restart", command=self.restart_game,
@@ -109,7 +114,6 @@ class Game2048App:
         )
         self.restart_btn.pack(side="left", padx=10)
 
-        # --- Przycisk AI ---
         self.ai_btn = tk.Button(
             ctrl_frame, text="🤖 Gra AI", command=self.toggle_ai,
             font=("Helvetica", 14, "bold"), bg="#4CAF50", fg="white",
@@ -126,12 +130,11 @@ class Game2048App:
         )
         self.quit_btn.pack(side="left", padx=10)
 
-        # W sekcji gdzie masz inne przyciski (np. ctrl_frame)
         self.btn_1k = tk.Button(ctrl_frame, text="Test", command=self.start_1k_benchmark, bg="purple", fg="white")
         self.btn_1k.pack(side=tk.LEFT, padx=5)
 
-    # --- RYSOWANIE SIATKI ---
     def draw_grid(self):
+        """Rysuje puste tło siatki gry."""
         self.canvas.delete("all")
         for i in range(self.size):
             for j in range(self.size):
@@ -140,14 +143,13 @@ class Game2048App:
                 y2 = y1 + self.TILE_SIZE
                 self.canvas.create_rectangle(x1, y1, x2, y2, fill='#cdc1b4', outline='')
 
-    # --- NARZĘDZIA KOORDYNATÓW ---
     def _get_coords(self, col, row):
         x = col * (self.TILE_SIZE + self.PADDING) + self.PADDING
         y = row * (self.TILE_SIZE + self.PADDING) + self.PADDING
         return x, y
 
-    # --- RYSOWANIE KAFELKA ---
     def _draw_tile(self, value, col, row, tile_id=None, is_new=False):
+        """Rysuje pojedynczy kafelek na płótnie."""
         x, y = self._get_coords(col, row)
         colors = self.TILE_COLORS.get(value, self.TILE_COLORS[0])
 
@@ -178,8 +180,8 @@ class Game2048App:
 
         return tile_id
 
-    # --- ANIMACJA ---
     def animate_move(self, start_pos, end_pos, tile_id, duration=100):
+        """Prosta animacja przesunięcia kafelka (obecnie nieużywana w głównym loopie dla wydajności)."""
         if self.animation_in_progress:
             return
 
@@ -212,8 +214,8 @@ class Game2048App:
 
         step(0)
 
-    # --- ODSWIEŻANIE PLANSZY ---
     def update_board(self, animate=True):
+        """Rysuje całą planszę na nowo na podstawie stanu `game.board`."""
         self.score_label.config(text=str(self.game.score))
 
         new_tile_objects = {}
@@ -232,9 +234,8 @@ class Game2048App:
 
         self.tile_objects = new_tile_objects
 
-    # --- HANDLER KLUCZY ---
     def key_handler(self, event):
-        # Blokada klawiszy gdy gra AI
+        """Obsługuje zdarzenia klawiatury (strzałki, WASD)."""
         if self.game_over_shown or self.animation_in_progress or self.ai_running:
             return
 
@@ -257,9 +258,8 @@ class Game2048App:
                 self.game_over_shown = True
                 self.show_popup()
 
-    # --- RESET GRY ---
     def restart_game(self):
-        # Stop AI przy restarcie
+        """Resetuje grę i interfejs."""
         self.ai_running = False
         self.ai_btn.config(text="🤖 Gra AI", bg="#4CAF50")
 
@@ -272,8 +272,8 @@ class Game2048App:
         self.root.bind("<Key>", self.key_handler)
         self.update_board(animate=False)
 
-    # --- GAME OVER POPUP ---
     def show_popup(self):
+        """Wyświetla okienko końca gry."""
         if self.game_over_popup:
             return
 
@@ -306,49 +306,43 @@ class Game2048App:
         self.game_over_popup = popup
 
 
-    # --- METODY AI ---
     def toggle_ai(self):
+        """Włącza lub wyłącza automatycznego gracza."""
         if self.ai_running:
-            # Zatrzymaj
             self.ai_running = False
             self.ai_btn.config(text="🤖 Gra AI", bg="#4CAF50")
         else:
-            # Uruchom
             self.ai_running = True
             self.ai_btn.config(text="⏹ Stop AI", bg="#f44336")
             self.run_ai_step()
 
     def run_ai_step(self):
+        """Pojedynczy krok pętli AI wywoływany cyklicznie przez `after`."""
         if not self.ai_running or self.game_over_shown:
             self.ai_running = False
             self.ai_btn.config(text="🤖 Gra AI", bg="#4CAF50")
             return
 
-        # 1. Pobierz dostępne ruchy
         valid_moves = self.game.get_valid_moves()
         if not valid_moves:
             self.game_over_shown = True
             self.show_popup()
             return
 
-        # 2. Wybierz najlepszy ruch (1-step Lookahead)
         state = self.game.board.copy()
         best_move, best_v = None, -float('inf')
 
         for move in valid_moves:
             self.sim_game.board = state.copy()
-            # AI używa move_without_random, by zobaczyć przyszły stan
             next_s_sim, _, _ = self.sim_game.move_without_random(move)
 
-            # AIPlayer (get_expected_value -> evaluate) sam decyduje,
-            # których wag (Normal/Panic) użyć na podstawie planszy next_s_sim
+ 
             v = self.ai.get_expected_value(next_s_sim)
 
             if v > best_v:
                 best_v = v
                 best_move = move
 
-        # 3. Wykonaj ruch w prawdziwej grze
         if best_move:
             _, _, done, changed = self.game.move(best_move)
             if changed:
@@ -361,18 +355,17 @@ class Game2048App:
                 self.show_popup()
                 return
 
-        # 4. Zaplanuj kolejny krok (50ms)
         self.root.after(50, self.run_ai_step)
 
 
     def start_1k_benchmark(self):
+        """Uruchamia benchmark w oddzielnym wątku."""
         self.btn_1k.config(state=tk.DISABLED, text="Pracuję...")
         threading.Thread(target=self._run_benchmark_thread, daemon=True).start()
 
     def _run_benchmark_thread(self):
         bench = Benchmark(self.ai)
 
-        # ZMIANA: Callback przyjmuje teraz current_score
         def visual_update(final_board, current_game, total_games, current_score):
             self.root.after(0, lambda: self._update_gui_for_benchmark(final_board, current_game, total_games, current_score))
 
@@ -382,22 +375,17 @@ class Game2048App:
         self.root.after(0, lambda: self.score_label.config(text=f"Koniec", fg='#776e65'))
 
     def _update_gui_for_benchmark(self, board, current, total, current_score):
-        # Aktualizacja wizualna planszy
         self.game.board = board
-        # Ważne: musimy ręcznie ustawić self.game.score, żeby update_board wyświetlił dobry wynik
         self.game.score = current_score
 
         self.update_board(animate=False)
 
-        # Dodatkowo wymuszamy aktualizację labela (dla pewności, choć update_board to robi)
         self.score_label.config(text=str(current_score), fg='#776e65')
 
-        # Tytuł okna pokazuje postęp
         self.root.title(f"Benchmark: Gra {current}/{total}")
         self.root.update_idletasks()
 
 
-# --------------- program start ---------------
 
 if __name__ == "__main__":
     root = tk.Tk()
