@@ -29,20 +29,20 @@ class Game2048App:
 
         print("-" * 40)
         if loaded_episode > 0:
-            print(f"✅ SUKCES: Wczytano WYTRENOWANY model (Epizod {loaded_episode})")
+            print(f"Wczytano wytrenowany model (Epizod {loaded_episode})")
         else:
-            print("⚠️ UWAGA: Gram na DOMYŚLNYCH ustawieniach (Brak pliku)")
+            print("DOMYŚLNE ustawienia (Brak pliku)")
 
     
-        print(f"🧠 Wagi NORMAL (Spokój): {self.ai.weights_normal}")
-        print(f"🔥 Wagi PANIC  (Kryzys): {self.ai.weights_panic}")
+        print(f"Wagi NORMAL: {self.ai.weights_normal}")
+        print(f"Wagi PANIC: {self.ai.weights_panic}")
         print("-" * 40)
         
 
         self.ai_running = False
         self.sim_game = Game2048(size)  
 
-        self.root.title("2048 - Tkinter (AI Dual-Mode)")
+        self.root.title("2048 - Tkinter")
         self.root.resizable(False, False)
 
         self.TILE_SIZE = 100
@@ -107,7 +107,7 @@ class Game2048App:
 
     def _create_controls(self, ctrl_frame):
         self.restart_btn = tk.Button(
-            ctrl_frame, text="🔄 Restart", command=self.restart_game,
+            ctrl_frame, text="Restart", command=self.restart_game,
             font=("Helvetica", 14, "bold"), bg="#8f7a66", fg="white",
             activebackground="#a68a72", activeforeground="white",
             relief="flat", bd=0, padx=15, pady=5
@@ -115,7 +115,7 @@ class Game2048App:
         self.restart_btn.pack(side="left", padx=10)
 
         self.ai_btn = tk.Button(
-            ctrl_frame, text="🤖 Gra AI", command=self.toggle_ai,
+            ctrl_frame, text="Gra AI", command=self.toggle_ai,
             font=("Helvetica", 14, "bold"), bg="#4CAF50", fg="white",
             activebackground="#45a049", activeforeground="white",
             relief="flat", bd=0, padx=15, pady=5
@@ -123,7 +123,7 @@ class Game2048App:
         self.ai_btn.pack(side="left", padx=10)
 
         self.quit_btn = tk.Button(
-            ctrl_frame, text="❌ Wyjście", command=self.root.destroy,
+            ctrl_frame, text="Wyjście", command=self.root.destroy,
             font=("Helvetica", 14, "bold"), bg="#8f7a66", fg="white",
             activebackground="#a68a72", activeforeground="white",
             relief="flat", bd=0, padx=15, pady=5
@@ -261,7 +261,7 @@ class Game2048App:
     def restart_game(self):
         """Resetuje grę i interfejs."""
         self.ai_running = False
-        self.ai_btn.config(text="🤖 Gra AI", bg="#4CAF50")
+        self.ai_btn.config(text="Gra AI", bg="#4CAF50")
 
         if self.game_over_popup:
             self.game_over_popup.destroy()
@@ -294,7 +294,7 @@ class Game2048App:
         ).pack(pady=5)
 
         btn = tk.Button(
-            popup, text="🔄 Restart",
+            popup, text="Restart",
             font=("Helvetica", 14, "bold"),
             bg="#8f7a66", fg="white",
             activebackground="#a68a72",
@@ -310,17 +310,17 @@ class Game2048App:
         """Włącza lub wyłącza automatycznego gracza."""
         if self.ai_running:
             self.ai_running = False
-            self.ai_btn.config(text="🤖 Gra AI", bg="#4CAF50")
+            self.ai_btn.config(text="Gra AI", bg="#4CAF50")
         else:
             self.ai_running = True
-            self.ai_btn.config(text="⏹ Stop AI", bg="#f44336")
+            self.ai_btn.config(text="Stop AI", bg="#f44336")
             self.run_ai_step()
 
     def run_ai_step(self):
         """Pojedynczy krok pętli AI wywoływany cyklicznie przez `after`."""
         if not self.ai_running or self.game_over_shown:
             self.ai_running = False
-            self.ai_btn.config(text="🤖 Gra AI", bg="#4CAF50")
+            self.ai_btn.config(text="Gra AI", bg="#4CAF50")
             return
 
         valid_moves = self.game.get_valid_moves()
@@ -350,7 +350,7 @@ class Game2048App:
 
             if done:
                 self.ai_running = False
-                self.ai_btn.config(text="🤖 Gra AI", bg="#4CAF50")
+                self.ai_btn.config(text="Gra AI", bg="#4CAF50")
                 self.game_over_shown = True
                 self.show_popup()
                 return
