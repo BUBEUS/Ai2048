@@ -2,19 +2,24 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 
-# --- KONFIGURACJA ---
 CSV_FILE = "training_history.csv"
-WINDOW_SIZE = 50  # Wygładzanie (średnia krocząca)
-DPI = 120         # Jakość obrazków
+WINDOW_SIZE = 50 
+DPI = 120         
 
 def setup_style():
+    """Ustawia styl wykresów matplotlib (seaborn lub ggplot)."""
     try:
         plt.style.use('seaborn-v0_8-darkgrid')
     except:
         plt.style.use('ggplot')
 
-# 1. WYKRES WYNIKÓW (Sama średnia wyników)
 def plot_just_scores(df):
+    """
+    Rysuje wykres średniego wyniku (Rolling Mean).
+    
+    Args:
+        df (pd.DataFrame): DataFrame z danymi treningowymi.
+    """
     print("Generowanie: Wykres Wyników...")
     rolling_score = df['Score'].rolling(window=WINDOW_SIZE).mean()
 
@@ -31,12 +36,16 @@ def plot_just_scores(df):
     plt.savefig("wykres_wyniki.png", dpi=DPI)
     plt.close()
 
-# 2. WYKRES WAG (Bez zmian)
 def plot_weights(df):
+    """
+    Rysuje zmiany wartości wag w czasie dla obu trybów (Normal i Panic).
+    
+    Args:
+        df (pd.DataFrame): DataFrame z danymi treningowymi.
+    """
     print("Generowanie: Wykres Wag...")
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 10), sharex=True)
 
-    # Normal
     ax1.set_title('Wagi NORMAL (Budowanie)', fontsize=14, fontweight='bold')
     ax1.set_ylabel('Wartość', fontsize=12)
 
@@ -53,7 +62,6 @@ def plot_weights(df):
     ax1.legend(loc='upper left', ncol=2)
     ax1.grid(True)
 
-    # Panic
     ax2.set_title('Wagi PANIC (Ratunek)', fontsize=14, fontweight='bold')
     ax2.set_ylabel('Wartość', fontsize=12)
     ax2.set_xlabel('Epizody', fontsize=12)
@@ -75,25 +83,29 @@ def plot_weights(df):
     plt.savefig("wykres_wagi.png", dpi=DPI)
     plt.close()
 
-# 3. WYKRES KLOCKÓW (Dwa ploty: Max i Średni Max)
 def plot_tiles_split(df):
+    """
+    Rysuje wykresy dotyczące maksymalnego klocka.
+    1. Rekordowy max (peak).
+    2. Średni max (stabilność).
+
+    Args:
+        df (pd.DataFrame): DataFrame z danymi treningowymi.
+    """
     print("Generowanie: Wykres Klocków (2 ploty)...")
 
-    # Dane
+   
     rolling_peak_max = df['MaxTile'].rolling(window=WINDOW_SIZE).max()
     rolling_avg_max = df['MaxTile'].rolling(window=WINDOW_SIZE).mean()
 
-    # Tworzymy 2 oddzielne wykresy jeden pod drugim
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 10), sharex=True)
 
-    # Plot 1: REKORDOWY MAX KLOCEK
     ax1.set_title(f'Rekordowy Max Klocek (Najlepszy w oknie {WINDOW_SIZE})', fontsize=13, fontweight='bold')
     ax1.set_ylabel('Wartość Klocka', fontsize=12)
     ax1.plot(df['Episode'], rolling_peak_max, color='tab:red', linewidth=2, label='Rekord MaxTile')
     ax1.legend(loc='upper left')
     ax1.grid(True, linestyle='--', alpha=0.7)
 
-    # Plot 2: ŚREDNI MAX KLOCEK
     ax2.set_title(f'Średni Max Klocek (Stabilność)', fontsize=13, fontweight='bold')
     ax2.set_ylabel('Wartość Klocka', fontsize=12)
     ax2.set_xlabel('Epizody', fontsize=12)
@@ -105,8 +117,13 @@ def plot_tiles_split(df):
     plt.savefig("wykres_klocki.png", dpi=DPI)
     plt.close()
 
-# 4. WYKRES RUCHÓW (Sama średnia liczba ruchów)
 def plot_moves_only(df):
+    """
+    Rysuje średnią liczbę ruchów na grę (wskaźnik przetrwania).
+
+    Args:
+        df (pd.DataFrame): DataFrame z danymi treningowymi.
+    """
     print("Generowanie: Wykres Ruchów...")
     if 'Moves' not in df.columns:
         print("Brak danych o ruchach.")
@@ -128,6 +145,7 @@ def plot_moves_only(df):
     plt.close()
 
 def generate_charts():
+    """Główna funkcja sterująca generowaniem wszystkich wykresów."""
     if not os.path.exists(CSV_FILE):
         print(f"Brak pliku {CSV_FILE}")
         return
@@ -140,11 +158,11 @@ def generate_charts():
 
     setup_style()
 
-    # Generowanie 4 niezależnych zestawów
-    plot_just_scores(df)   # 1. Wyniki
-    plot_weights(df)       # 2. Wagi
-    plot_tiles_split(df)   # 3. Klocki (Max i Średni)
-    plot_moves_only(df)    # 4. Ruchy
+  
+    plot_just_scores(df)   
+    plot_weights(df)      
+    plot_tiles_split(df)  
+    plot_moves_only(df)   
 
     print("--> Zakończono generowanie wszystkich 4 wykresów.")
 
