@@ -45,6 +45,7 @@
               <div class="local-toc"><ul>
 <li><a class="reference internal" href="#">Dokumentacja Projektu 2048 AI</a><ul>
 <li><a class="reference internal" href="#wstep">Wstęp</a></li>
+<li><a class="reference internal" href="#struktura-projektu">Struktura Projektu</a></li>
 <li><a class="reference internal" href="#wymagania-i-biblioteki">Wymagania i Biblioteki</a></li>
 <li><a class="reference internal" href="#instalacja">Instalacja</a></li>
 <li><a class="reference internal" href="#jak-uruchomic-projekt">Jak uruchomić projekt</a></li>
@@ -154,11 +155,23 @@
 <h2>Wstęp<a class="headerlink" href="#wstep" title="Link to this heading"></a></h2>
 <p>Projekt polega na stworzeniu inteligentnego agenta (AI), który samodzielnie uczy się grać w popularną grę logiczną <strong>2048</strong>.
 Celem algorytmu jest osiągnięcie jak najwyższego wyniku oraz kafelka o wartości 2048 (lub wyższej) poprzez optymalizację wag i strategii ruchu.</p>
-<p>Główne funkcjonalności:
-* Symulacja gry 2048.
-* Interfejs graficzny (GUI) do obserwacji rozgrywki.
-* Moduł trenujący AI (uczenie maszynowe/algorytmy genetyczne).
-* Generowanie wykresów i analiza skuteczności.</p>
+</section>
+<section id="struktura-projektu">
+<h2>Struktura Projektu<a class="headerlink" href="#struktura-projektu" title="Link to this heading"></a></h2>
+<p>Poniżej przedstawiono strukturę plików w katalogu głównym projektu:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Ai2048/
+├── source/                  # Folder z plikami źródłowymi dokumentacji
+│   ├── conf.py              # Konfiguracja Sphinx
+│   └── index.rst            # Główny plik spisu treści (ten plik)
+├── ai_player.py             # Logika AI (Algorytm Minimax/Heurystyka)
+├── benchmark_module.py      # Moduł do testowania skuteczności modelu
+├── find_bestWagi.py         # Skrypt optymalizujący wagi (uczenie)
+├── game_2048.py             # Główny silnik gry (logika bez grafiki)
+├── game_gui.py              # Interfejs graficzny gry
+├── plot_charts.py           # Generowanie wykresów wyników
+└── train.py                 # Skrypt uruchamiający trening AI
+</pre></div>
+</div>
 </section>
 <section id="wymagania-i-biblioteki">
 <h2>Wymagania i Biblioteki<a class="headerlink" href="#wymagania-i-biblioteki" title="Link to this heading"></a></h2>
@@ -170,9 +183,9 @@ Celem algorytmu jest osiągnięcie jak najwyższego wyniku oraz kafelka o warto�
 <p><strong>Biblioteki standardowe (wbudowane w Python):</strong>
 * <code class="docutils literal notranslate"><span class="pre">os</span></code> - obsługa systemu plików.
 * <code class="docutils literal notranslate"><span class="pre">time</span></code> - pomiar czasu i opóźnienia.
-* <code class="docutils literal notranslate"><span class="pre">pickle</span></code> - zapisywanie i odczytywanie stanu nauki (modeli).
-* <code class="docutils literal notranslate"><span class="pre">tkinter</span></code> - obsługa interfejsu graficznego (okna, przyciski).
-* <code class="docutils literal notranslate"><span class="pre">threading</span></code> - obsługa wielowątkowości (równoległe działanie gry i AI).</p>
+* <code class="docutils literal notranslate"><span class="pre">pickle</span></code> - zapisywanie i odczytywanie stanu nauki.
+* <code class="docutils literal notranslate"><span class="pre">tkinter</span></code> - obsługa okien systemowych.
+* <code class="docutils literal notranslate"><span class="pre">threading</span></code> - obsługa wielowątkowości.</p>
 </section>
 <section id="instalacja">
 <h2>Instalacja<a class="headerlink" href="#instalacja" title="Link to this heading"></a></h2>
@@ -183,7 +196,6 @@ Celem algorytmu jest osiągnięcie jak najwyższego wyniku oraz kafelka o warto�
 </section>
 <section id="jak-uruchomic-projekt">
 <h2>Jak uruchomić projekt<a class="headerlink" href="#jak-uruchomic-projekt" title="Link to this heading"></a></h2>
-<p>W zależności od tego, co chcesz zrobić, uruchom odpowiedni plik:</p>
 <ol class="arabic">
 <li><p><strong>Aby zobaczyć grę w oknie graficznym:</strong></p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>game_gui.py

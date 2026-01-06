@@ -7,11 +7,24 @@ Wstęp
 Projekt polega na stworzeniu inteligentnego agenta (AI), który samodzielnie uczy się grać w popularną grę logiczną **2048**. 
 Celem algorytmu jest osiągnięcie jak najwyższego wyniku oraz kafelka o wartości 2048 (lub wyższej) poprzez optymalizację wag i strategii ruchu.
 
-Główne funkcjonalności:
-* Symulacja gry 2048.
-* Interfejs graficzny (GUI) do obserwacji rozgrywki.
-* Moduł trenujący AI (uczenie maszynowe/algorytmy genetyczne).
-* Generowanie wykresów i analiza skuteczności.
+Struktura Projektu
+------------------
+
+Poniżej przedstawiono strukturę plików w katalogu głównym projektu:
+
+.. code-block:: text
+
+    Ai2048/
+    ├── source/                  # Folder z plikami źródłowymi dokumentacji
+    │   ├── conf.py              # Konfiguracja Sphinx
+    │   └── index.rst            # Główny plik spisu treści (ten plik)
+    ├── ai_player.py             # Logika AI (Algorytm Minimax/Heurystyka)
+    ├── benchmark_module.py      # Moduł do testowania skuteczności modelu
+    ├── find_bestWagi.py         # Skrypt optymalizujący wagi (uczenie)
+    ├── game_2048.py             # Główny silnik gry (logika bez grafiki)
+    ├── game_gui.py              # Interfejs graficzny gry 
+    ├── plot_charts.py           # Generowanie wykresów wyników
+    └── train.py                 # Skrypt uruchamiający trening AI
 
 Wymagania i Biblioteki
 ----------------------
@@ -26,9 +39,9 @@ Projekt napisany jest w języku Python. Wykorzystuje następujące biblioteki:
 **Biblioteki standardowe (wbudowane w Python):**
 * ``os`` - obsługa systemu plików.
 * ``time`` - pomiar czasu i opóźnienia.
-* ``pickle`` - zapisywanie i odczytywanie stanu nauki (modeli).
-* ``tkinter`` - obsługa interfejsu graficznego (okna, przyciski).
-* ``threading`` - obsługa wielowątkowości (równoległe działanie gry i AI).
+* ``pickle`` - zapisywanie i odczytywanie stanu nauki.
+* ``tkinter`` - obsługa okien systemowych.
+* ``threading`` - obsługa wielowątkowości.
 
 Instalacja
 ----------
@@ -37,12 +50,10 @@ Aby zainstalować wymagane pakiety zewnętrzne, uruchom w terminalu:
 
 .. code-block:: bash
 
-   pip install pandas numpy matplotlib
+   pip install pandas numpy matplotlib 
 
 Jak uruchomić projekt
 ---------------------
-
-W zależności od tego, co chcesz zrobić, uruchom odpowiedni plik:
 
 1. **Aby zobaczyć grę w oknie graficznym:**
 
