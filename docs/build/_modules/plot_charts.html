@@ -71,10 +71,9 @@
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">os</span>
 
-<span class="c1"># --- KONFIGURACJA ---</span>
 <span class="n">CSV_FILE</span> <span class="o">=</span> <span class="s2">&quot;training_history.csv&quot;</span>
-<span class="n">WINDOW_SIZE</span> <span class="o">=</span> <span class="mi">50</span>  <span class="c1"># Wygładzanie (średnia krocząca)</span>
-<span class="n">DPI</span> <span class="o">=</span> <span class="mi">120</span>         <span class="c1"># Jakość obrazków</span>
+<span class="n">WINDOW_SIZE</span> <span class="o">=</span> <span class="mi">50</span> 
+<span class="n">DPI</span> <span class="o">=</span> <span class="mi">120</span>         
 
 <div class="viewcode-block" id="setup_style">
 <a class="viewcode-back" href="../index.html#plot_charts.setup_style">[dokumentacja]</a>
@@ -86,7 +85,6 @@
         <span class="n">plt</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;ggplot&#39;</span><span class="p">)</span></div>
 
 
-<span class="c1"># 1. WYKRES WYNIKÓW (Sama średnia wyników)</span>
 <div class="viewcode-block" id="plot_just_scores">
 <a class="viewcode-back" href="../index.html#plot_charts.plot_just_scores">[dokumentacja]</a>
 <span class="k">def</span> <span class="nf">plot_just_scores</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
@@ -113,7 +111,6 @@
     <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
 
-<span class="c1"># 2. WYKRES WAG (Bez zmian)</span>
 <div class="viewcode-block" id="plot_weights">
 <a class="viewcode-back" href="../index.html#plot_charts.plot_weights">[dokumentacja]</a>
 <span class="k">def</span> <span class="nf">plot_weights</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
@@ -126,7 +123,6 @@
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Generowanie: Wykres Wag...&quot;</span><span class="p">)</span>
     <span class="n">fig</span><span class="p">,</span> <span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">)</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="c1"># Normal</span>
     <span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Wagi NORMAL (Budowanie)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s1">&#39;bold&#39;</span><span class="p">)</span>
     <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Wartość&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
 
@@ -143,7 +139,6 @@
     <span class="n">ax1</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;upper left&#39;</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
     <span class="n">ax1</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="c1"># Panic</span>
     <span class="n">ax2</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Wagi PANIC (Ratunek)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s1">&#39;bold&#39;</span><span class="p">)</span>
     <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Wartość&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
     <span class="n">ax2</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Epizody&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
@@ -166,7 +161,6 @@
     <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
 
-<span class="c1"># 3. WYKRES KLOCKÓW (Dwa ploty: Max i Średni Max)</span>
 <div class="viewcode-block" id="plot_tiles_split">
 <a class="viewcode-back" href="../index.html#plot_charts.plot_tiles_split">[dokumentacja]</a>
 <span class="k">def</span> <span class="nf">plot_tiles_split</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
@@ -180,21 +174,18 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Generowanie: Wykres Klocków (2 ploty)...&quot;</span><span class="p">)</span>
 
-    <span class="c1"># Dane</span>
+   
     <span class="n">rolling_peak_max</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;MaxTile&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">rolling</span><span class="p">(</span><span class="n">window</span><span class="o">=</span><span class="n">WINDOW_SIZE</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
     <span class="n">rolling_avg_max</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;MaxTile&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">rolling</span><span class="p">(</span><span class="n">window</span><span class="o">=</span><span class="n">WINDOW_SIZE</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
 
-    <span class="c1"># Tworzymy 2 oddzielne wykresy jeden pod drugim</span>
     <span class="n">fig</span><span class="p">,</span> <span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">)</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="c1"># Plot 1: REKORDOWY MAX KLOCEK</span>
     <span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Rekordowy Max Klocek (Najlepszy w oknie </span><span class="si">{</span><span class="n">WINDOW_SIZE</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s1">&#39;bold&#39;</span><span class="p">)</span>
     <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Wartość Klocka&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
     <span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Episode&#39;</span><span class="p">],</span> <span class="n">rolling_peak_max</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;tab:red&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Rekord MaxTile&#39;</span><span class="p">)</span>
     <span class="n">ax1</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;upper left&#39;</span><span class="p">)</span>
     <span class="n">ax1</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
 
-    <span class="c1"># Plot 2: ŚREDNI MAX KLOCEK</span>
     <span class="n">ax2</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Średni Max Klocek (Stabilność)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s1">&#39;bold&#39;</span><span class="p">)</span>
     <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Wartość Klocka&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
     <span class="n">ax2</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Epizody&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
@@ -207,7 +198,6 @@
     <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
 
-<span class="c1"># 4. WYKRES RUCHÓW (Sama średnia liczba ruchów)</span>
 <div class="viewcode-block" id="plot_moves_only">
 <a class="viewcode-back" href="../index.html#plot_charts.plot_moves_only">[dokumentacja]</a>
 <span class="k">def</span> <span class="nf">plot_moves_only</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
@@ -254,11 +244,11 @@
 
     <span class="n">setup_style</span><span class="p">()</span>
 
-    <span class="c1"># Generowanie 4 niezależnych zestawów</span>
-    <span class="n">plot_just_scores</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>   <span class="c1"># 1. Wyniki</span>
-    <span class="n">plot_weights</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>       <span class="c1"># 2. Wagi</span>
-    <span class="n">plot_tiles_split</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>   <span class="c1"># 3. Klocki (Max i Średni)</span>
-    <span class="n">plot_moves_only</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>    <span class="c1"># 4. Ruchy</span>
+  
+    <span class="n">plot_just_scores</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>   
+    <span class="n">plot_weights</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>      
+    <span class="n">plot_tiles_split</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>  
+    <span class="n">plot_moves_only</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>   
 
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;--&gt; Zakończono generowanie wszystkich 4 wykresów.&quot;</span><span class="p">)</span>
 

@@ -1,6 +1,70 @@
 Dokumentacja Projektu 2048 AI
 =============================
 
+Wstęp
+-----
+
+Projekt polega na stworzeniu inteligentnego agenta (AI), który samodzielnie uczy się grać w popularną grę logiczną **2048**. 
+Celem algorytmu jest osiągnięcie jak najwyższego wyniku oraz kafelka o wartości 2048 (lub wyższej) poprzez optymalizację wag i strategii ruchu.
+
+Główne funkcjonalności:
+* Symulacja gry 2048.
+* Interfejs graficzny (GUI) do obserwacji rozgrywki.
+* Moduł trenujący AI (uczenie maszynowe/algorytmy genetyczne).
+* Generowanie wykresów i analiza skuteczności.
+
+Wymagania i Biblioteki
+----------------------
+
+Projekt napisany jest w języku Python. Wykorzystuje następujące biblioteki:
+
+**Biblioteki zewnętrzne (wymagana instalacja):**
+* ``pandas`` - do analizy i przetwarzania danych.
+* ``numpy`` - do szybkich obliczeń macierzowych.
+* ``matplotlib`` - do wizualizacji wyników (wykresy).
+
+**Biblioteki standardowe (wbudowane w Python):**
+* ``os`` - obsługa systemu plików.
+* ``time`` - pomiar czasu i opóźnienia.
+* ``pickle`` - zapisywanie i odczytywanie stanu nauki (modeli).
+* ``tkinter`` - obsługa interfejsu graficznego (okna, przyciski).
+* ``threading`` - obsługa wielowątkowości (równoległe działanie gry i AI).
+
+Instalacja
+----------
+
+Aby zainstalować wymagane pakiety zewnętrzne, uruchom w terminalu:
+
+.. code-block:: bash
+
+   pip install pandas numpy matplotlib
+
+Jak uruchomić projekt
+---------------------
+
+W zależności od tego, co chcesz zrobić, uruchom odpowiedni plik:
+
+1. **Aby zobaczyć grę w oknie graficznym:**
+
+   .. code-block:: bash
+
+      python game_gui.py
+
+2. **Aby uruchomić trenowanie modelu AI:**
+
+   .. code-block:: bash
+
+      python train.py
+
+3. **Aby wygenerować wykresy skuteczności:**
+
+   .. code-block:: bash
+
+      python plot_charts.py
+
+Dokumentacja Kodu (API)
+=======================
+
 .. toctree::
    :maxdepth: 2
    :caption: Spis treści:

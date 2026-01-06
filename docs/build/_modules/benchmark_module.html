@@ -78,14 +78,12 @@
 <span class="kn">from</span> <span class="nn">ai_player</span> <span class="kn">import</span> <span class="n">AIPlayer</span>
 <span class="kn">import</span> <span class="nn">concurrent.futures</span>
 
-<span class="c1"># Próba ustawienia ładniejszego stylu wykresów</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;seaborn-v0_8-white&#39;</span><span class="p">)</span>
 <span class="k">except</span><span class="p">:</span>
     <span class="k">pass</span>
 
-<span class="c1"># --- KOLORY DO WIZUALIZACJI PLANSZ ---</span>
-<span class="n">GRID_COLOR</span> <span class="o">=</span> <span class="s1">&#39;#bbada0&#39;</span> <span class="c1"># Kolor tła siatki gry</span>
+<span class="n">GRID_COLOR</span> <span class="o">=</span> <span class="s1">&#39;#bbada0&#39;</span> 
 <span class="n">CELL_COLORS</span> <span class="o">=</span> <span class="p">{</span>
     <span class="mi">0</span><span class="p">:</span> <span class="s1">&#39;#cdc1b4&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="s1">&#39;#eee4da&#39;</span><span class="p">,</span> <span class="mi">4</span><span class="p">:</span> <span class="s1">&#39;#ede0c8&#39;</span><span class="p">,</span> <span class="mi">8</span><span class="p">:</span> <span class="s1">&#39;#f2b179&#39;</span><span class="p">,</span>
     <span class="mi">16</span><span class="p">:</span> <span class="s1">&#39;#f59563&#39;</span><span class="p">,</span> <span class="mi">32</span><span class="p">:</span> <span class="s1">&#39;#f67c5f&#39;</span><span class="p">,</span> <span class="mi">64</span><span class="p">:</span> <span class="s1">&#39;#f65e3b&#39;</span><span class="p">,</span> <span class="mi">128</span><span class="p">:</span> <span class="s1">&#39;#edcf72&#39;</span><span class="p">,</span>
@@ -276,40 +274,32 @@
         <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_axis_off</span><span class="p">()</span>
 
-        <span class="c1"># Parametry siatki</span>
         <span class="n">padding</span> <span class="o">=</span> <span class="mf">0.1</span>
         <span class="n">cell_size</span> <span class="o">=</span> <span class="mf">1.0</span>
         <span class="n">grid_width</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">cell_size</span> <span class="o">+</span> <span class="mi">5</span> <span class="o">*</span> <span class="n">padding</span>
 
-        <span class="c1"># Tło całej siatki</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">grid_width</span><span class="p">)</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">grid_width</span><span class="p">)</span>
         <span class="n">bg_rect</span> <span class="o">=</span> <span class="n">patches</span><span class="o">.</span><span class="n">Rectangle</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">grid_width</span><span class="p">,</span> <span class="n">grid_width</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="n">GRID_COLOR</span><span class="p">)</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">add_patch</span><span class="p">(</span><span class="n">bg_rect</span><span class="p">)</span>
 
-        <span class="c1"># Rysowanie komórek</span>
         <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
                 <span class="n">val</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">board</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">])</span>
 
-                <span class="c1"># Obliczanie pozycji (odwracamy oś Y, bo w macierzy 0 jest na górze)</span>
                 <span class="n">x_pos</span> <span class="o">=</span> <span class="n">padding</span> <span class="o">+</span> <span class="n">col</span> <span class="o">*</span> <span class="p">(</span><span class="n">cell_size</span> <span class="o">+</span> <span class="n">padding</span><span class="p">)</span>
                 <span class="n">y_pos</span> <span class="o">=</span> <span class="n">padding</span> <span class="o">+</span> <span class="p">(</span><span class="mi">3</span> <span class="o">-</span> <span class="n">row</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">cell_size</span> <span class="o">+</span> <span class="n">padding</span><span class="p">)</span>
 
-                <span class="c1"># Kolor tła kafelka</span>
                 <span class="n">bg_color</span> <span class="o">=</span> <span class="n">CELL_COLORS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">CELL_COLORS</span><span class="p">[</span><span class="s1">&#39;super&#39;</span><span class="p">])</span>
 
-                <span class="c1"># Rysowanie kafelka (zaokrąglone rogi nie są łatwe w matplotlib,</span>
-                <span class="c1"># ale zwykły prostokąt z odpowiednimi kolorami wygląda dobrze)</span>
+    
                 <span class="n">rect</span> <span class="o">=</span> <span class="n">patches</span><span class="o">.</span><span class="n">Rectangle</span><span class="p">((</span><span class="n">x_pos</span><span class="p">,</span> <span class="n">y_pos</span><span class="p">),</span> <span class="n">cell_size</span><span class="p">,</span> <span class="n">cell_size</span><span class="p">,</span>
                                          <span class="n">linewidth</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="n">bg_color</span><span class="p">)</span>
                 <span class="n">ax</span><span class="o">.</span><span class="n">add_patch</span><span class="p">(</span><span class="n">rect</span><span class="p">)</span>
 
-                <span class="c1"># Rysowanie tekstu</span>
                 <span class="k">if</span> <span class="n">val</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="n">text_color</span> <span class="o">=</span> <span class="n">TEXT_COLORS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">TEXT_COLORS</span><span class="p">[</span><span class="s1">&#39;other&#39;</span><span class="p">])</span>
 
-                    <span class="c1"># Dynamiczny rozmiar czcionki</span>
                     <span class="n">font_size</span> <span class="o">=</span> <span class="mi">35</span>
                     <span class="k">if</span> <span class="n">val</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">:</span> <span class="n">font_size</span> <span class="o">=</span> <span class="mi">30</span>
                     <span class="k">if</span> <span class="n">val</span> <span class="o">&gt;</span> <span class="mi">1000</span><span class="p">:</span> <span class="n">font_size</span> <span class="o">=</span> <span class="mi">24</span>
@@ -319,10 +309,8 @@
                             <span class="n">ha</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">text_color</span><span class="p">,</span>
                             <span class="n">fontsize</span><span class="o">=</span><span class="n">font_size</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s1">&#39;bold&#39;</span><span class="p">,</span> <span class="n">fontfamily</span><span class="o">=</span><span class="s1">&#39;sans-serif&#39;</span><span class="p">)</span>
 
-        <span class="c1"># Tytuł</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">title_prefix</span><span class="si">}</span><span class="se">\n</span><span class="s2">Wynik: </span><span class="si">{</span><span class="n">score</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">18</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s1">&#39;bold&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;#776e65&#39;</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
 
-        <span class="c1"># Zapis w wysokiej jakości</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">150</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;#faf8ef&#39;</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
 
@@ -331,16 +319,13 @@
         <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">12</span><span class="p">),</span> <span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;#faf8ef&#39;</span><span class="p">)</span>
         <span class="n">gs</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_gridspec</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">wspace</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">hspace</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
 
-        <span class="c1"># 1. MAPA CIEPŁA (AVERAGE PER MOVE)</span>
         <span class="n">ax_map</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="n">gs</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">])</span>
 
         <span class="n">heatmap_log</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">heatmap_avg</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
 
-        <span class="c1"># Używamy &#39;inferno&#39; dla bardziej &quot;gorącego&quot; wyglądu, lub &#39;magma&#39;</span>
         <span class="n">im</span> <span class="o">=</span> <span class="n">ax_map</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">heatmap_log</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;inferno&#39;</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s1">&#39;nearest&#39;</span><span class="p">)</span>
         <span class="n">ax_map</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Analiza Strategii (Średnia Wartość Pola na Ruch)&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s1">&#39;bold&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;#776e65&#39;</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
 
-        <span class="c1"># Dodanie siatki oddzielającej pola na heatmapie</span>
         <span class="n">ax_map</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mf">.5</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">minor</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">ax_map</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mf">.5</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">minor</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">ax_map</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">which</span><span class="o">=</span><span class="s1">&#39;minor&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;white&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
@@ -351,7 +336,6 @@
             <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
                 <span class="n">val</span> <span class="o">=</span> <span class="n">heatmap_avg</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span>
                 <span class="n">val_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">val</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">&quot;</span>
-                <span class="c1"># Biały tekst z mocnym czarnym obrysem dla kontrastu</span>
                 <span class="n">text</span> <span class="o">=</span> <span class="n">ax_map</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">val_str</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span>
                                    <span class="n">color</span><span class="o">=</span><span class="s1">&#39;white&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s1">&#39;bold&#39;</span><span class="p">)</span>
                 <span class="n">text</span><span class="o">.</span><span class="n">set_path_effects</span><span class="p">([</span><span class="n">path_effects</span><span class="o">.</span><span class="n">withStroke</span><span class="p">(</span><span class="n">linewidth</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">foreground</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">)])</span>
@@ -360,7 +344,7 @@
         <span class="n">cbar</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s1">&#39;Skala Logarytmiczna (Log2)&#39;</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">270</span><span class="p">,</span> <span class="n">labelpad</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
         <span class="n">cbar</span><span class="o">.</span><span class="n">outline</span><span class="o">.</span><span class="n">set_linewidth</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
-        <span class="c1"># 2. STATYSTYKI</span>
+
         <span class="n">ax_stats</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="n">gs</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
         <span class="n">ax_stats</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
 
@@ -371,10 +355,10 @@
         <span class="n">text_str</span> <span class="o">=</span> <span class="s2">&quot;DYSTRYBUCJA MAX KLOCKA:</span><span class="se">\n</span><span class="s2">&quot;</span>
         <span class="n">text_str</span> <span class="o">+=</span> <span class="s2">&quot;━&quot;</span> <span class="o">*</span> <span class="mi">25</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
         <span class="k">for</span> <span class="n">tile</span> <span class="ow">in</span> <span class="n">sorted_tiles</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">tile</span> <span class="o">&gt;=</span> <span class="mi">128</span><span class="p">:</span> <span class="c1"># Pokazujemy też mniejsze, jeśli to był max</span>
+            <span class="k">if</span> <span class="n">tile</span> <span class="o">&gt;=</span> <span class="mi">128</span><span class="p">:</span> 
                 <span class="n">count</span> <span class="o">=</span> <span class="n">counts</span><span class="p">[</span><span class="n">tile</span><span class="p">]</span>
                 <span class="n">perc</span> <span class="o">=</span> <span class="p">(</span><span class="n">count</span> <span class="o">/</span> <span class="n">total</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>
-                <span class="c1"># Ładniejsze formatowanie z wyrównaniem</span>
+
                 <span class="n">text_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tile</span><span class="si">:</span><span class="s2">&lt;5</span><span class="si">}</span><span class="s2"> : </span><span class="si">{</span><span class="n">count</span><span class="si">:</span><span class="s2">&gt;4</span><span class="si">}</span><span class="s2"> gier (</span><span class="si">{</span><span class="n">perc</span><span class="si">:</span><span class="s2">&gt;5.1f</span><span class="si">}</span><span class="s2">%)</span><span class="se">\n</span><span class="s2">&quot;</span>
 
         <span class="n">avg_score</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span>
@@ -385,14 +369,13 @@
         <span class="n">text_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;Max     : </span><span class="si">{</span><span class="n">max_score</span><span class="si">:</span><span class="s2">&gt;8</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
         <span class="n">text_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;Min     : </span><span class="si">{</span><span class="n">min_score</span><span class="si">:</span><span class="s2">&gt;8</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
 
-        <span class="c1"># Umieszczenie tekstu w ładnym &quot;pudełku&quot;</span>
+ 
         <span class="n">props</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">boxstyle</span><span class="o">=</span><span class="s1">&#39;round,pad=1&#39;</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;#f9f6f2&#39;</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;#bbada0&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
         <span class="n">ax_stats</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">text_str</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">ax_stats</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span>
                       <span class="n">verticalalignment</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">horizontalalignment</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span>
                       <span class="n">fontfamily</span><span class="o">=</span><span class="s1">&#39;monospace&#39;</span><span class="p">,</span> <span class="n">bbox</span><span class="o">=</span><span class="n">props</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;#776e65&#39;</span><span class="p">)</span>
 
-        <span class="c1"># 3. WAGI</span>
-        <span class="n">ax_weights</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="n">gs</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">])</span> <span class="c1"># Rozciągamy na całą szerokość</span>
+        <span class="n">ax_weights</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="n">gs</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">])</span> 
         <span class="n">ax_weights</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
 
         <span class="n">w_norm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ai</span><span class="o">.</span><span class="n">weights_normal</span>

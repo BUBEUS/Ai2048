@@ -44,6 +44,13 @@
               <!-- Local TOC -->
               <div class="local-toc"><ul>
 <li><a class="reference internal" href="#">Dokumentacja Projektu 2048 AI</a><ul>
+<li><a class="reference internal" href="#wstep">Wstęp</a></li>
+<li><a class="reference internal" href="#wymagania-i-biblioteki">Wymagania i Biblioteki</a></li>
+<li><a class="reference internal" href="#instalacja">Instalacja</a></li>
+<li><a class="reference internal" href="#jak-uruchomic-projekt">Jak uruchomić projekt</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#dokumentacja-kodu-api">Dokumentacja Kodu (API)</a><ul>
 <li><a class="reference internal" href="#module-game_2048">Silnik i Interfejs Gry</a><ul>
 <li><a class="reference internal" href="#game_2048.Game2048"><code class="docutils literal notranslate"><span class="pre">Game2048</span></code></a><ul>
 <li><a class="reference internal" href="#game_2048.Game2048.size"><code class="docutils literal notranslate"><span class="pre">Game2048.size</span></code></a></li>
@@ -143,6 +150,61 @@
              
   <section id="dokumentacja-projektu-2048-ai">
 <h1>Dokumentacja Projektu 2048 AI<a class="headerlink" href="#dokumentacja-projektu-2048-ai" title="Link to this heading"></a></h1>
+<section id="wstep">
+<h2>Wstęp<a class="headerlink" href="#wstep" title="Link to this heading"></a></h2>
+<p>Projekt polega na stworzeniu inteligentnego agenta (AI), który samodzielnie uczy się grać w popularną grę logiczną <strong>2048</strong>.
+Celem algorytmu jest osiągnięcie jak najwyższego wyniku oraz kafelka o wartości 2048 (lub wyższej) poprzez optymalizację wag i strategii ruchu.</p>
+<p>Główne funkcjonalności:
+* Symulacja gry 2048.
+* Interfejs graficzny (GUI) do obserwacji rozgrywki.
+* Moduł trenujący AI (uczenie maszynowe/algorytmy genetyczne).
+* Generowanie wykresów i analiza skuteczności.</p>
+</section>
+<section id="wymagania-i-biblioteki">
+<h2>Wymagania i Biblioteki<a class="headerlink" href="#wymagania-i-biblioteki" title="Link to this heading"></a></h2>
+<p>Projekt napisany jest w języku Python. Wykorzystuje następujące biblioteki:</p>
+<p><strong>Biblioteki zewnętrzne (wymagana instalacja):</strong>
+* <code class="docutils literal notranslate"><span class="pre">pandas</span></code> - do analizy i przetwarzania danych.
+* <code class="docutils literal notranslate"><span class="pre">numpy</span></code> - do szybkich obliczeń macierzowych.
+* <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> - do wizualizacji wyników (wykresy).</p>
+<p><strong>Biblioteki standardowe (wbudowane w Python):</strong>
+* <code class="docutils literal notranslate"><span class="pre">os</span></code> - obsługa systemu plików.
+* <code class="docutils literal notranslate"><span class="pre">time</span></code> - pomiar czasu i opóźnienia.
+* <code class="docutils literal notranslate"><span class="pre">pickle</span></code> - zapisywanie i odczytywanie stanu nauki (modeli).
+* <code class="docutils literal notranslate"><span class="pre">tkinter</span></code> - obsługa interfejsu graficznego (okna, przyciski).
+* <code class="docutils literal notranslate"><span class="pre">threading</span></code> - obsługa wielowątkowości (równoległe działanie gry i AI).</p>
+</section>
+<section id="instalacja">
+<h2>Instalacja<a class="headerlink" href="#instalacja" title="Link to this heading"></a></h2>
+<p>Aby zainstalować wymagane pakiety zewnętrzne, uruchom w terminalu:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>pandas<span class="w"> </span>numpy<span class="w"> </span>matplotlib
+</pre></div>
+</div>
+</section>
+<section id="jak-uruchomic-projekt">
+<h2>Jak uruchomić projekt<a class="headerlink" href="#jak-uruchomic-projekt" title="Link to this heading"></a></h2>
+<p>W zależności od tego, co chcesz zrobić, uruchom odpowiedni plik:</p>
+<ol class="arabic">
+<li><p><strong>Aby zobaczyć grę w oknie graficznym:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>game_gui.py
+</pre></div>
+</div>
+</li>
+<li><p><strong>Aby uruchomić trenowanie modelu AI:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>train.py
+</pre></div>
+</div>
+</li>
+<li><p><strong>Aby wygenerować wykresy skuteczności:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>plot_charts.py
+</pre></div>
+</div>
+</li>
+</ol>
+</section>
+</section>
+<section id="dokumentacja-kodu-api">
+<h1>Dokumentacja Kodu (API)<a class="headerlink" href="#dokumentacja-kodu-api" title="Link to this heading"></a></h1>
 <div class="toctree-wrapper compound">
 </div>
 <section id="module-game_2048">

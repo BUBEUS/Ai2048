@@ -76,7 +76,6 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">csv</span>
 
-<span class="c1"># Parametry</span>
 <span class="n">ALPHA_START</span> <span class="o">=</span> <span class="mf">0.001</span>
 <span class="n">ALPHA_END</span> <span class="o">=</span> <span class="mf">0.0001</span>
 <span class="n">GAMMA</span> <span class="o">=</span> <span class="mf">0.99</span>
@@ -99,16 +98,12 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        float: Zmodyfikowana wartość nagrody.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Standardowa nagroda (logarytmiczna)</span>
     <span class="k">if</span> <span class="n">game_reward</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">reward</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">reward</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">game_reward</span><span class="p">)</span>
 
-    <span class="c1"># === NOWOŚĆ: Bonus za Aktywność (Incentive) ===</span>
-    <span class="c1"># Jeśli w tym ruchu zdobyłeś punkty (czyli zrobiłeś merge),</span>
-    <span class="c1"># dostajesz ekstra bonus +1.0.</span>
-    <span class="c1"># To sygnał dla AI: &quot;Nie stój w miejscu, łącz klocki!&quot;</span>
+
     <span class="k">if</span> <span class="n">game_reward</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">reward</span> <span class="o">+=</span> <span class="mf">1.0</span>
 
@@ -116,7 +111,6 @@
 
 
 
-<span class="c1"># --- NOWA FUNKCJA POMOCNICZA ---</span>
 <div class="viewcode-block" id="save_logs_to_csv">
 <a class="viewcode-back" href="../index.html#train.save_logs_to_csv">[dokumentacja]</a>
 <span class="k">def</span> <span class="nf">save_logs_to_csv</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
@@ -134,7 +128,6 @@
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">file_exists</span><span class="p">:</span>
-            <span class="c1"># --- ZMIANA: Nagłówek dla 6 cech ---</span>
             <span class="n">header</span> <span class="o">=</span> <span class="p">[</span>
                 <span class="s2">&quot;Episode&quot;</span><span class="p">,</span> <span class="s2">&quot;Score&quot;</span><span class="p">,</span> <span class="s2">&quot;MaxTile&quot;</span><span class="p">,</span> <span class="s2">&quot;Moves&quot;</span><span class="p">,</span> <span class="s2">&quot;Duration_Sec&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;N_Empty&quot;</span><span class="p">,</span> <span class="s2">&quot;N_Max&quot;</span><span class="p">,</span> <span class="s2">&quot;N_Snake&quot;</span><span class="p">,</span> <span class="s2">&quot;N_Merge&quot;</span><span class="p">,</span> <span class="s2">&quot;N_Corner&quot;</span><span class="p">,</span> <span class="s2">&quot;N_Neigh&quot;</span><span class="p">,</span>
@@ -163,7 +156,7 @@
     <span class="n">max_tiles_history</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">csv_buffer</span> <span class="o">=</span> <span class="p">[]</span>
 
-    <span class="c1"># --- ZMIANA: Ładowanie stanu ---</span>
+
     <span class="n">CHECKPOINT_FILE</span> <span class="o">=</span> <span class="s2">&quot;ai_2048_save.pkl&quot;</span>
     <span class="n">start_episode</span> <span class="o">=</span> <span class="n">ai</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">CHECKPOINT_FILE</span><span class="p">)</span>
 
@@ -171,7 +164,6 @@
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Wznowiono trening od epizodu: </span><span class="si">{</span><span class="n">start_episode</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Rozpoczynam nowy trening...&quot;</span><span class="p">)</span>
-    <span class="c1"># -------------------------------</span>
 
     <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 
@@ -186,65 +178,55 @@
         <span class="n">game_start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
         <span class="n">moves_count</span> <span class="o">=</span> <span class="mi">0</span>
 
-        <span class="c1"># --- POPRAWIONA LOGIKA PARAMETRÓW ---</span>
-
-        <span class="c1"># 1. Obliczamy Bazową Alphę (Annealing)</span>
+   
         <span class="k">if</span> <span class="n">current_episode</span> <span class="o">&lt;</span> <span class="mi">2000</span><span class="p">:</span>
             <span class="n">progress</span> <span class="o">=</span> <span class="n">current_episode</span> <span class="o">/</span> <span class="mi">2000</span>
             <span class="n">base_alpha</span> <span class="o">=</span> <span class="n">ALPHA_START</span> <span class="o">-</span> <span class="p">((</span><span class="n">ALPHA_START</span> <span class="o">-</span> <span class="n">ALPHA_END</span><span class="p">)</span> <span class="o">*</span> <span class="n">progress</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">base_alpha</span> <span class="o">=</span> <span class="n">ALPHA_END</span>
 
-        <span class="c1"># 2. Dynamiczna Alpha (Szok)</span>
-        <span class="c1"># Sprawdzamy ŚREDNIĄ historię, a nie wynik obecnej gry (który jest 0)</span>
+      
         <span class="n">current_avg_score</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">scores_history</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">current_avg_score</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">scores_history</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">scores_history</span><span class="p">)</span>
 
         <span class="n">ai</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.00005</span>
-        <span class="n">epsilon</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1"># nieuzywana</span>
+        <span class="n">epsilon</span> <span class="o">=</span> <span class="mi">0</span> 
 
 
-        <span class="c1"># ------------------------------------</span>
+     
 
-        <span class="n">sim_game</span> <span class="o">=</span> <span class="n">Game2048</span><span class="p">(</span><span class="n">game</span><span class="o">.</span><span class="n">size</span><span class="p">)</span> <span class="c1"># 1.1 tu wyciagniecie</span>
+        <span class="n">sim_game</span> <span class="o">=</span> <span class="n">Game2048</span><span class="p">(</span><span class="n">game</span><span class="o">.</span><span class="n">size</span><span class="p">)</span> 
 
         <span class="k">while</span> <span class="ow">not</span> <span class="n">done</span><span class="p">:</span>
             <span class="n">valid_moves</span> <span class="o">=</span> <span class="n">game</span><span class="o">.</span><span class="n">get_valid_moves</span><span class="p">()</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_moves</span><span class="p">:</span>
                 <span class="k">break</span>
 
-            <span class="c1"># Epsilon-Greedy nie używamy</span>
+        
             <span class="k">if</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">epsilon</span><span class="p">:</span>
                 <span class="n">best_move</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">valid_moves</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">best_move</span><span class="p">,</span> <span class="n">best_v</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">-</span><span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span>
-                <span class="c1">#sim_game = Game2048(game.size) 1.1 wyciagniecie przed petle dla optymalizacji</span>
 
                 <span class="k">for</span> <span class="n">move</span> <span class="ow">in</span> <span class="n">valid_moves</span><span class="p">:</span>
                     <span class="n">sim_game</span><span class="o">.</span><span class="n">board</span> <span class="o">=</span> <span class="n">state</span>
                     <span class="n">next_s_sim</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">sim_game</span><span class="o">.</span><span class="n">move_without_random</span><span class="p">(</span><span class="n">move</span><span class="p">)</span>
 
-                    <span class="c1"># 1-step Lookahead z Expectimaxem</span>
                     <span class="n">v</span> <span class="o">=</span> <span class="n">ai</span><span class="o">.</span><span class="n">get_expected_value</span><span class="p">(</span><span class="n">next_s_sim</span><span class="p">)</span>
 
                     <span class="k">if</span> <span class="n">v</span> <span class="o">&gt;</span> <span class="n">best_v</span><span class="p">:</span>
                         <span class="n">best_v</span> <span class="o">=</span> <span class="n">v</span>
                         <span class="n">best_move</span> <span class="o">=</span> <span class="n">move</span>
 
-            <span class="c1"># Wykonanie</span>
+        
             <span class="n">next_state_real</span><span class="p">,</span> <span class="n">raw_reward</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">game</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">best_move</span><span class="p">)</span>
             <span class="n">moves_count</span> <span class="o">+=</span> <span class="mi">1</span>
 
-            <span class="c1"># Nauka</span>
             <span class="n">reward_shaped</span> <span class="o">=</span> <span class="n">get_shaped_reward</span><span class="p">(</span><span class="n">raw_reward</span><span class="p">,</span> <span class="n">next_state_real</span><span class="p">)</span>
             <span class="n">features_state</span> <span class="o">=</span> <span class="n">ai</span><span class="o">.</span><span class="n">get_features</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
-
-
-            <span class="c1"># --- ZMIANA: Używamy metody evaluate zamiast surowego np.dot ---</span>
-            <span class="c1"># Dzięki temu trening uwzględnia &quot;Smoothness&quot; i Fazy w obliczaniu błędu</span>
             <span class="n">current_v</span> <span class="o">=</span> <span class="n">ai</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
-            <span class="c1"># ---------------------------------------------------------------</span>
+          
 
             <span class="k">if</span> <span class="n">done</span><span class="p">:</span>
                 <span class="n">target</span> <span class="o">=</span> <span class="n">reward_shaped</span> <span class="o">-</span> <span class="mf">30.0</span>
@@ -254,18 +236,14 @@
 
             <span class="n">td_error</span> <span class="o">=</span> <span class="n">target</span> <span class="o">-</span> <span class="n">current_v</span>
 
-            <span class="c1"># Aktualizacja wag (Snake, Merge, Empty, Max)</span>
-            <span class="c1"># AI będzie próbowało dopasować te 4 wagi tak, aby skompensować</span>
-            <span class="c1"># wpływ naszej sztywnej &quot;Gładkości&quot;.</span>
+          
             <span class="n">ai</span><span class="o">.</span><span class="n">update_weights</span><span class="p">(</span><span class="n">features_state</span><span class="p">,</span> <span class="n">td_error</span><span class="p">)</span>
 
             <span class="n">state</span> <span class="o">=</span> <span class="n">next_state_real</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
 
-        <span class="c1"># Po zakończeniu gry (poza pętlą while not done):</span>
-        <span class="n">current_episode</span> <span class="o">+=</span> <span class="mi">1</span>  <span class="c1"># Inkrementacja licznika</span>
+        <span class="n">current_episode</span> <span class="o">+=</span> <span class="mi">1</span>  
 
-        <span class="c1"># --- NOWY BLOK KODU: Zbieranie danych do CSV ---</span>
         <span class="n">game_duration</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">game_start_time</span>
         <span class="n">log_entry</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">current_episode</span><span class="p">,</span>
@@ -273,17 +251,14 @@
             <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">game</span><span class="o">.</span><span class="n">board</span><span class="p">),</span>
             <span class="n">moves_count</span><span class="p">,</span>
             <span class="nb">round</span><span class="p">(</span><span class="n">game_duration</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
-            <span class="c1"># Wagi Normalne (6 sztuk)</span>
             <span class="nb">round</span><span class="p">(</span><span class="n">ai</span><span class="o">.</span><span class="n">weights_normal</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">5</span><span class="p">),</span> <span class="nb">round</span><span class="p">(</span><span class="n">ai</span><span class="o">.</span><span class="n">weights_normal</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">5</span><span class="p">),</span>
             <span class="nb">round</span><span class="p">(</span><span class="n">ai</span><span class="o">.</span><span class="n">weights_normal</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="mi">5</span><span class="p">),</span> <span class="nb">round</span><span class="p">(</span><span class="n">ai</span><span class="o">.</span><span class="n">weights_normal</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="mi">5</span><span class="p">),</span>
             <span class="nb">round</span><span class="p">(</span><span class="n">ai</span><span class="o">.</span><span class="n">weights_normal</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="mi">5</span><span class="p">),</span> <span class="nb">round</span><span class="p">(</span><span class="n">ai</span><span class="o">.</span><span class="n">weights_normal</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span> <span class="mi">5</span><span class="p">),</span>
-            <span class="c1"># Wagi Paniki (6 sztuk)</span>
             <span class="nb">round</span><span class="p">(</span><span class="n">ai</span><span class="o">.</span><span class="n">weights_panic</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">5</span><span class="p">),</span> <span class="nb">round</span><span class="p">(</span><span class="n">ai</span><span class="o">.</span><span class="n">weights_panic</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">5</span><span class="p">),</span>
             <span class="nb">round</span><span class="p">(</span><span class="n">ai</span><span class="o">.</span><span class="n">weights_panic</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="mi">5</span><span class="p">),</span> <span class="nb">round</span><span class="p">(</span><span class="n">ai</span><span class="o">.</span><span class="n">weights_panic</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="mi">5</span><span class="p">),</span>
             <span class="nb">round</span><span class="p">(</span><span class="n">ai</span><span class="o">.</span><span class="n">weights_panic</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="mi">5</span><span class="p">),</span> <span class="nb">round</span><span class="p">(</span><span class="n">ai</span><span class="o">.</span><span class="n">weights_panic</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span> <span class="mi">5</span><span class="p">)</span>
         <span class="p">]</span>
         <span class="n">csv_buffer</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">log_entry</span><span class="p">)</span>
-        <span class="c1"># -----------------------------------------------</span>
 
         <span class="n">scores_history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">game</span><span class="o">.</span><span class="n">score</span><span class="p">)</span>
         <span class="n">max_tiles_history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">game</span><span class="o">.</span><span class="n">board</span><span class="p">))</span>
@@ -292,14 +267,12 @@
             <span class="n">scores_history</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
             <span class="n">max_tiles_history</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
-        <span class="c1"># --- ZMIANA: Zapis co 200 epizodów (rozszerzona o CSV) ---</span>
+        
         <span class="k">if</span> <span class="n">current_episode</span> <span class="o">%</span> <span class="mi">200</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">ai</span><span class="o">.</span><span class="n">save_model</span><span class="p">(</span><span class="n">CHECKPOINT_FILE</span><span class="p">,</span> <span class="n">current_episode</span><span class="p">)</span>
-            <span class="n">save_logs_to_csv</span><span class="p">(</span><span class="n">csv_buffer</span><span class="p">,</span> <span class="n">LOG_FILE</span><span class="p">)</span> <span class="c1"># &lt;--- Zapis CSV</span>
-            <span class="n">csv_buffer</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># &lt;--- Wyczyszczenie bufora</span>
-        <span class="c1"># -------------------------------------</span>
+            <span class="n">save_logs_to_csv</span><span class="p">(</span><span class="n">csv_buffer</span><span class="p">,</span> <span class="n">LOG_FILE</span><span class="p">)</span> 
+            <span class="n">csv_buffer</span> <span class="o">=</span> <span class="p">[]</span> 
 
-        <span class="c1"># Output co 50 epok</span>
         <span class="k">if</span> <span class="n">current_episode</span> <span class="o">%</span> <span class="mi">50</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">avg_score</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">scores_history</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">scores_history</span><span class="p">)</span>
             <span class="n">avg_max</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">max_tiles_history</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">max_tiles_history</span><span class="p">)</span>
@@ -316,7 +289,6 @@
             <span class="nb">print</span><span class="p">(</span><span class="n">game</span><span class="o">.</span><span class="n">board</span><span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">40</span><span class="p">)</span>
 
-    <span class="c1"># --- DODANO NA KOŃCU FUNKCJI ---</span>
     <span class="k">if</span> <span class="n">csv_buffer</span><span class="p">:</span>
         <span class="n">save_logs_to_csv</span><span class="p">(</span><span class="n">csv_buffer</span><span class="p">,</span> <span class="n">LOG_FILE</span><span class="p">)</span>
 

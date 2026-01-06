@@ -150,7 +150,7 @@
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">row</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">row</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]:</span>
                 <span class="n">row</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*=</span> <span class="mi">2</span>
-                <span class="n">points</span> <span class="o">+=</span> <span class="n">row</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>  <span class="c1"># Tylko obliczamy, NIE dodajemy do self.score</span>
+                <span class="n">points</span> <span class="o">+=</span> <span class="n">row</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>  
                 <span class="n">row</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">return</span> <span class="n">row</span><span class="p">,</span> <span class="n">points</span>
 
@@ -191,7 +191,6 @@
         <span class="k">if</span> <span class="n">direction</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rotations</span><span class="p">:</span> <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Błąd kierunku&quot;</span><span class="p">)</span>
         <span class="n">k</span> <span class="o">=</span> <span class="n">rotations</span><span class="p">[</span><span class="n">direction</span><span class="p">]</span>
 
-        <span class="c1"># Operujemy na widoku (szybkie, brak deepcopy)</span>
         <span class="n">board_working</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">board</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">)</span>
         <span class="n">new_rows</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">step_reward</span> <span class="o">=</span> <span class="mi">0</span>
@@ -223,7 +222,6 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">new_board</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">changed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_move_result</span><span class="p">(</span><span class="n">direction</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">board</span> <span class="o">=</span> <span class="n">new_board</span>
-        <span class="c1"># W symulacji nie aktualizujemy self.score, bo to tylko &#39;wyobrażenie&#39;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">board</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">changed</span></div>
 
 
@@ -289,18 +287,17 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">rotations</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;left&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;up&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;right&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;down&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">}</span>
         <span class="n">k</span> <span class="o">=</span> <span class="n">rotations</span><span class="p">[</span><span class="n">direction</span><span class="p">]</span>
-        <span class="c1"># rot90 zwraca widok (view) - operacja O(1), brak alokacji pamięci</span>
         <span class="n">board_view</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">board</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">board_view</span><span class="p">:</span>
             <span class="n">prev</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
             <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">row</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="n">prev</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1"># Oznaczamy, że widzieliśmy puste pole</span>
+                    <span class="n">prev</span> <span class="o">=</span> <span class="mi">0</span> 
                 <span class="k">elif</span> <span class="n">prev</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="kc">True</span> <span class="c1"># Liczba po zerze -&gt; przesunięcie</span>
+                    <span class="k">return</span> <span class="kc">True</span> 
                 <span class="k">elif</span> <span class="n">x</span> <span class="o">==</span> <span class="n">prev</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="kc">True</span> <span class="c1"># Dwie takie same obok siebie -&gt; łączenie</span>
+                    <span class="k">return</span> <span class="kc">True</span> 
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">prev</span> <span class="o">=</span> <span class="n">x</span>
         <span class="k">return</span> <span class="kc">False</span></div>
@@ -331,7 +328,6 @@
 
 
 
-<span class="c1"># ===== Przykładowe uruchomienie =====</span>
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="n">game</span> <span class="o">=</span> <span class="n">Game2048</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
     <span class="n">game</span><span class="o">.</span><span class="n">print_board</span><span class="p">()</span>
@@ -343,7 +339,6 @@
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Nieprawidłowy ruch!&quot;</span><span class="p">)</span>
             <span class="k">continue</span>
 
-        <span class="c1"># ZMIANA: Odbieramy 4 wartości zamiast 3</span>
         <span class="n">board</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="n">changed</span> <span class="o">=</span> <span class="n">game</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">mapping</span><span class="p">[</span><span class="n">move</span><span class="p">])</span>
         <span class="n">game</span><span class="o">.</span><span class="n">print_board</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">done</span><span class="p">:</span>
